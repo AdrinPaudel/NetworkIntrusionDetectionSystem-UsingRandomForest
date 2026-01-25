@@ -33,9 +33,6 @@ src/__pycache__/
 *.sublime-project
 *.sublime-workspace
 
-# Jupyter Notebook
-.ipynb_checkpoints/
-
 # Logs
 *.log
 logs/

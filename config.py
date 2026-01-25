@@ -102,19 +102,36 @@ STRATIFY = True  # Maintain class proportions in split
 SCALER_TYPE = 'standard'  # 'standard' or 'minmax'
 
 # SMOTE (Synthetic Minority Over-sampling)
-APPLY_SMOTE = True  # Enabled for moderate oversampling
+APPLY_SMOTE = True  # Enabled for tiered oversampling strategy
 SMOTE_K_NEIGHBORS = 5
-SMOTE_TARGET_PERCENTAGE = 0.03  # Moderate: Bring minorities to ~3% of dataset (not 1% which would be excessive)
+SMOTE_STRATEGY = 'tiered'  # 'uniform' or 'tiered' (tiered = different targets per class)
+# Tiered targets for 7-class system (excluding Heartbleed)
+SMOTE_TIERED_TARGETS = {
+    # Format: class_index: target_percentage_of_train_set
+    # Benign (0), Botnet (1), Brute Force (2), DDoS (3), DoS (4) - no SMOTE needed
+    5: 0.015,  # Infiltration → 1.5% (harder to detect, needs more samples)
+    6: 0.020,  # Web Attack → 2.0% (very rare, needs substantial boost)
+}
+SMOTE_TARGET_PERCENTAGE = 0.03  # Fallback for uniform strategy
 
-# Feature Selection (RFE)
-ENABLE_RFE = False  # Temporarily disabled for testing (enable after verifying other steps work)
-APPLY_RFE = False  # Legacy flag, use ENABLE_RFE instead
-RFE_MIN_FEATURES = 30  # Start from 30 features minimum
-RFE_STEP = 1  # Features to remove per iteration
+# Feature Selection (RF Importance - Paper 1 Method)
+ENABLE_RFE = False  # ✗ DISABLED - Using RF importance instead (faster)
+ENABLE_RF_IMPORTANCE = True  # ✓ ENABLED - Fast RF Gini importance (Paper 1 method)
+RF_IMPORTANCE_TREES = 100  # Trees for importance calculation (balance speed/stability)
+RF_IMPORTANCE_MAX_DEPTH = 15  # Max depth for importance RF
+RF_IMPORTANCE_N_JOBS = 16  # Parallel jobs (reduced from 32 - threading backend limit)
+TARGET_FEATURES_MIN = 40  # Minimum features to keep
+TARGET_FEATURES_MAX = 45  # Maximum features to keep
+IMPORTANCE_THRESHOLD = 0.005  # Keep features above this importance
+
+# Legacy RFE parameters (not used when ENABLE_RFE=False)
+APPLY_RFE = False  # Legacy flag
+RFE_MIN_FEATURES = 30
+RFE_STEP = 1
 RFE_CV_FOLDS = 5
 RFE_SCORING = 'f1_macro'
-RFE_TARGET_FEATURES_MIN = 35  # Moderate target (not too aggressive)
-RFE_TARGET_FEATURES_MAX = 45  # Moderate target (not too aggressive)
+RFE_TARGET_FEATURES_MIN = 35
+RFE_TARGET_FEATURES_MAX = 45
 
 # ============================================================
 # MODEL TRAINING SETTINGS
@@ -122,19 +139,23 @@ RFE_TARGET_FEATURES_MAX = 45  # Moderate target (not too aggressive)
 
 # Hyperparameter Tuning (RandomizedSearchCV)
 HYPERPARAMETER_TUNING = True
-N_ITER_SEARCH = 50  # Number of parameter combinations to try
-CV_FOLDS = 5  # Cross-validation folds
+N_ITER_SEARCH = 20  # FAST MODE: Reduced from 50 for quick training
+CV_FOLDS = 3  # Cross-validation folds (reduced from 5 for memory efficiency)
 TUNING_SCORING = 'f1_macro'  # Optimization metric
 
-# Random Forest Hyperparameter Search Space
+# Memory Management during Training
+GARBAGE_COLLECTION_INTERVAL = 5  # Run gc.collect() every N iterations
+ENABLE_MEMORY_OPTIMIZATION = True  # Enable periodic memory cleanup
+
+# Random Forest Hyperparameter Search Space (FAST MODE)
 PARAM_DISTRIBUTIONS = {
-    'n_estimators': [100, 150, 200, 250, 300, 350, 400, 450, 500],
-    'max_depth': [10, 15, 20, 25, 30, 35, 40, 45, 50, None],
-    'min_samples_split': [2, 3, 4, 5, 7, 10, 15],
-    'min_samples_leaf': [1, 2, 3, 4, 5, 7],
-    'max_features': ['sqrt', 'log2', None],
-    'bootstrap': [True, False],
-    'class_weight': ['balanced', 'balanced_subsample', None]
+    'n_estimators': [100, 150],  # FAST: Only 2 options
+    'max_depth': [20, 25, 30],  # FAST: Focused mid-range
+    'min_samples_split': [2, 5, 10],
+    'min_samples_leaf': [1, 2, 4],
+    'max_features': ['sqrt', 'log2'],  # Removed None
+    'bootstrap': [True],  # FAST: Only True (faster subsampling)
+    'class_weight': ['balanced_subsample', None]  # FAST: Removed 'balanced'
 }
 
 # Default hyperparameters (if tuning is skipped)
@@ -167,10 +188,13 @@ ROC_MACRO_AVERAGE = True
 # SYSTEM SETTINGS
 # ============================================================
 
-# Parallel processing
-N_JOBS = -1  # Use all available CPU cores (32 vCPU)
+# Parallel processing (64 vCPU / 416GB RAM system)
+# Using high but bounded parallelism to avoid oversubscription
+N_JOBS = 64          # For heavy fits (e.g., final RF training uses all logical CPUs)
+N_JOBS_LIGHT = 16    # For per-estimator parallelism during tuning/feature importance
+N_JOBS_CV = 4        # Concurrent CV folds during tuning (4 * 16 ≈ 64 logical threads)
 
-# Memory settings (optimized for 208GB RAM)
+# Memory settings (optimized for 416GB RAM)
 LOW_MEMORY = False  # We have plenty of RAM
 
 # Logging

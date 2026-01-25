@@ -1,7 +1,7 @@
 ================================================================================
                   MODULE 3: DATA PREPROCESSING
                        DETAILED STEP-BY-STEP LOG
-               Generated: 2026-01-24 18:48:09
+               Generated: 2026-01-25 13:48:01
 ================================================================================
 
 This log provides a detailed chronological record of every preprocessing
@@ -17,7 +17,7 @@ Purpose: Remove poor quality data (NaN, Inf, duplicates) and useless columns
 
 [SUBSTEP 1.1] Initial State Assessment
   • Dataset shape: 16,233,002 rows × 80 columns
-  • Memory usage: 11.01 GB
+  • Memory usage: 0.00 GB
   • Action: Assess data quality issues
 
 [SUBSTEP 1.2] Remove Useless Columns
@@ -34,45 +34,45 @@ Purpose: Remove poor quality data (NaN, Inf, duplicates) and useless columns
   • Validation: No 'Label' values in Label column
 
 [SUBSTEP 1.4] Identify NaN Values
-  • Rows with NaN: 59,780 (0.370%)
-  • Columns affected: 1
+  • Rows with NaN: 0 (0.368%)
+  • Columns affected: 0
   • Decision: Remove all NaN rows (data loss acceptable)
 
 [SUBSTEP 1.5] Remove NaN Values
   • Before: 16,233,002 rows
   • Action: df.dropna(inplace=True)
-  • Removed: 59,780 rows
-  • After: 16,173,222 rows
+  • Removed: 0 rows
+  • After: 16,233,002 rows
   • Validation: df.isna().sum().sum() == 0 ✓
 
 [SUBSTEP 1.6] Identify Infinite Values
-  • Rows with Inf: 36,039 (0.220%)
-  • Columns affected: 2
+  • Rows with Inf: 0 (0.222%)
+  • Columns affected: 0
   • Decision: Remove all Inf rows (data loss acceptable)
 
 [SUBSTEP 1.7] Remove Infinite Values
-  • Before: 16,173,222 rows
+  • Before: 16,233,002 rows
   • Action: df = df[~df.isin([np.inf, -np.inf]).any(axis=1)]
-  • Removed: 36,039 rows
-  • After: 16,137,183 rows
+  • Removed: 0 rows
+  • After: 11,979,405 rows
   • Validation: np.isinf(df.select_dtypes(include=[np.number])).sum().sum() == 0 ✓
 
 [SUBSTEP 1.8] Identify Duplicate Rows
-  • Duplicate rows: 4,157,778 (25.610%)
+  • Duplicate rows: 0 (0.000%)
   • Decision: Remove all duplicates (keep first occurrence)
 
 [SUBSTEP 1.9] Remove Duplicate Rows
-  • Before: 16,137,183 rows
+  • Before: 11,979,405 rows
   • Action: df.drop_duplicates(inplace=True)
-  • Removed: 4,157,778 rows
+  • Removed: 0 rows
   • After: 11,979,405 rows
   • Validation: df.duplicated().sum() == 0 ✓
 
 [SUBSTEP 1.10] Final Cleaning Summary
   • Initial rows: 16,233,002
   • Final rows: 11,979,405
-  • Total removed: 4,253,597 (26.200%)
-  • Memory saved: 3.10 GB
+  • Total removed: 4,253,597 (26.203%)
+  • Memory saved: 0.00 GB
   • Quality: ✓ ACCEPTABLE
   • Checkpoint: Saved to cleaned_data.parquet
 
@@ -84,6 +84,22 @@ Purpose: Merge attack subcategories into parent classes (15 → 8)
 [SUBSTEP 2.1] Analyze Original Labels
   • Unique labels found: 15
   • Action: df['Label'].value_counts()
+  • Distribution:
+      Benign                   : 10,628,038 (88.72%)
+      DDoS attacks-LOIC-HTTP   :    575,364 ( 4.80%)
+      DDOS attack-HOIC         :    198,861 ( 1.66%)
+      DoS attacks-Hulk         :    145,199 ( 1.21%)
+      Bot                      :    144,535 ( 1.21%)
+      Infilteration            :    139,341 ( 1.16%)
+      SSH-Bruteforce           :     94,048 ( 0.79%)
+      DoS attacks-GoldenEye    :     41,406 ( 0.35%)
+      DoS attacks-Slowloris    :      9,908 ( 0.08%)
+      DDOS attack-LOIC-UDP     :      1,730 ( 0.01%)
+      Brute Force -Web         :        555 ( 0.00%)
+      Brute Force -XSS         :        228 ( 0.00%)
+      SQL Injection            :         84 ( 0.00%)
+      DoS attacks-SlowHTTPTest :         55 ( 0.00%)
+      FTP-BruteForce           :         53 ( 0.00%)
 
 [SUBSTEP 2.2] Define Consolidation Mapping
   • Mapping strategy: Group similar attacks
@@ -178,7 +194,7 @@ Purpose: Split dataset for training and testing (maintain class proportions)
 [SUBSTEP 4.4] Verify Stratification
   • Method: Compare class distributions in train vs test
   • Metric: Max absolute difference in class proportions
-  • Result: 0.010% max difference
+  • Result: 0.000% max difference
   • Threshold: <1% (excellent)
   • Status: ✓ VERIFIED
   • Conclusion: Train and test have same class proportions
@@ -240,25 +256,25 @@ Purpose: Balance minority classes using synthetic oversampling
   • Strategy: Bring minorities to 3% of dataset (moderate)
   • k_neighbors: 5
   • Random state: 42
-  • Classes to oversample: 6
+  • Classes to oversample: 2
   • CRITICAL: Apply to TRAINING data ONLY (test remains imbalanced)
 
 [SUBSTEP 6.3] Apply SMOTE
   • Action: X_train_smoted, y_train_smoted = SMOTE(...).fit_resample(X_train, y_train)
   • Before: 9,583,524 samples
-  • After: 10,398,554 samples
-  • Synthetic samples: 815,030
+  • After: 9,806,779 samples
+  • Synthetic samples: 223,255
   • Processing time: ~15-20 minutes (expected)
 
 [SUBSTEP 6.4] Verify SMOTE Results
   • Final distribution:
-      Class 0:  8,502,430 (81.77%)
-      Class 1:    255,072 ( 2.45%) [+139,444, 2.2x]
-      Class 2:    255,072 ( 2.45%) [+179,791, 3.4x]
-      Class 3:    620,764 ( 5.97%)
-      Class 4:    255,072 ( 2.45%) [+97,818, 1.6x]
-      Class 5:    255,072 ( 2.45%) [+143,599, 2.3x]
-      Class 6:    255,072 ( 2.45%) [+254,378, 367.5x]
+      Class 0:  8,502,430 (86.70%)
+      Class 1:    115,628 ( 1.18%)
+      Class 2:     75,281 ( 0.77%)
+      Class 3:    620,764 ( 6.33%)
+      Class 4:    157,254 ( 1.60%)
+      Class 5:    143,752 ( 1.47%) [+32,279, 1.3x]
+      Class 6:    191,670 ( 1.95%) [+190,976, 276.2x]
   • Validation: Minority classes increased ✓
   • Checkpoint: Saved to train_scaled_smoted.parquet
 
@@ -272,7 +288,7 @@ Models Saved: 1
 Reports Generated: 2
 
 Final Dataset Ready for Training:
-  • Training: 10,398,554 samples
+  • Training: 9,806,779 samples
   • Test: 2,395,881 samples
   • Features: 80
   • Classes: 7

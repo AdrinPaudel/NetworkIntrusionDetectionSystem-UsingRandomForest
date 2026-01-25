@@ -1,0 +1,125 @@
+(venv) paudeladrin@instance-20260123-213323:~/Nids$ python main.py --module 1
+[2026-01-25 12:50:00] [SUCCESS] [SETUP] All directories created/verified
+
+[2026-01-25 12:50:00] [INFO] Starting Module 1: Data Loading
+
+================================================================================
+  MODULE 1: DATA LOADING
+================================================================================
+
+[2026-01-25 12:50:00] [INFO] Found 10 CSV files in /home/paudeladrin/Nids/data/raw
+[INFO]   1. Friday-02-03-2018_TrafficForML_CICFlowMeter.csv (0.33 GB)
+[INFO]   2. Friday-16-02-2018_TrafficForML_CICFlowMeter.csv (0.31 GB)
+[INFO]   3. Friday-23-02-2018_TrafficForML_CICFlowMeter.csv (0.36 GB)
+[INFO]   4. Thuesday-20-02-2018_TrafficForML_CICFlowMeter.csv (3.44 GB)
+[INFO]   5. Thursday-01-03-2018_TrafficForML_CICFlowMeter.csv (0.10 GB)
+[INFO]   6. Thursday-15-02-2018_TrafficForML_CICFlowMeter.csv (0.35 GB)
+[INFO]   7. Thursday-22-02-2018_TrafficForML_CICFlowMeter.csv (0.36 GB)
+[INFO]   8. Wednesday-14-02-2018_TrafficForML_CICFlowMeter.csv (0.33 GB)
+[INFO]   9. Wednesday-21-02-2018_TrafficForML_CICFlowMeter.csv (0.31 GB)
+[INFO]   10. Wednesday-28-02-2018_TrafficForML_CICFlowMeter.csv (0.19 GB)
+
+[2026-01-25 12:50:00] [STEP] Loading 10 CSV files...
+[2026-01-25 12:50:00] [INFO] Using parallel loading with 10 workers
+
+[2026-01-25 12:50:00] [INFO] Loading: Friday-02-03-2018_TrafficForML_CICFlowMeter.csv
+[2026-01-25 12:50:00] [INFO] Loading: Friday-16-02-2018_TrafficForML_CICFlowMeter.csv
+[2026-01-25 12:50:00] [INFO] Loading: Friday-23-02-2018_TrafficForML_CICFlowMeter.csv
+[2026-01-25 12:50:00] [INFO] Loading: Thuesday-20-02-2018_TrafficForML_CICFlowMeter.csv
+[2026-01-25 12:50:00] [INFO] Loading: Thursday-01-03-2018_TrafficForML_CICFlowMeter.csv
+[2026-01-25 12:50:00] [INFO] Loading: Thursday-15-02-2018_TrafficForML_CICFlowMeter.csv
+[2026-01-25 12:50:00] [INFO] Loading: Thursday-22-02-2018_TrafficForML_CICFlowMeter.csv
+[2026-01-25 12:50:00] [INFO] Loading: Wednesday-14-02-2018_TrafficForML_CICFlowMeter.csv
+[2026-01-25 12:50:00] [INFO] Loading: Wednesday-21-02-2018_TrafficForML_CICFlowMeter.csv
+[2026-01-25 12:50:00] [INFO] Loading: Wednesday-28-02-2018_TrafficForML_CICFlowMeter.csv
+[INFO]   Loaded 331,125 rows, 80 columns
+[2026-01-25 12:50:27] [INFO] [5/10] Completed
+[INFO]   Loaded 613,104 rows, 80 columns
+[2026-01-25 12:51:13] [INFO] [10/10] Completed
+[INFO]   Loaded 1,048,575 rows, 80 columns
+[2026-01-25 12:51:13] [INFO] [9/10] Completed
+[INFO]   Loaded 1,048,575 rows, 80 columns
+[2026-01-25 12:51:17] [INFO] [8/10] Completed
+[INFO]   Loaded 1,048,575 rows, 80 columns
+[2026-01-25 12:51:19] [INFO] [1/10] Completed
+[INFO]   Loaded 1,048,575 rows, 80 columns
+[2026-01-25 12:51:21] [INFO] [6/10] Completed
+[INFO]   Loaded 1,048,575 rows, 80 columns
+[2026-01-25 12:51:21] [INFO] [7/10] Completed
+[INFO]   Loaded 1,048,575 rows, 80 columns
+[2026-01-25 12:51:23] [INFO] [3/10] Completed
+[INFO]   Loaded 1,048,575 rows, 80 columns
+[2026-01-25 12:52:12] [INFO] [2/10] Completed
+[INFO]   Loaded 7,948,748 rows, 80 columns
+[2026-01-25 12:53:52] [INFO] [4/10] Completed
+
+[2026-01-25 12:53:52] [INFO] Concatenating all files...
+[2026-01-25 12:53:58] [SUCCESS] Combined dataset: 16,233,002 rows, 80 columns
+
+[2026-01-25 12:53:58] [INFO] Preserving original data types (no optimization)
+[2026-01-25 12:53:58] [STEP] Validating dataset...
+[2026-01-25 12:53:58] [SUCCESS] Label column found: 'Label'
+[2026-01-25 12:53:58] [SUCCESS] Protocol column found: 'Protocol'
+[2026-01-25 12:53:58] [INFO] Numeric columns: 76
+[2026-01-25 12:53:58] [INFO] Unique labels: 16
+
+[2026-01-25 12:53:58] [STEP] Calculating initial statistics...
+
+================================================================================
+  INITIAL DATASET STATISTICS
+================================================================================
+Total Rows:          16,233,002
+Total Columns:       80
+Memory Usage:        11.01 GB
+
+Data Types Distribution:
+  - float64: 76 columns
+  - object: 2 columns
+  - str: 2 columns
+
+Numeric Columns:     76
+Categorical Columns: 4
+
+Label Distribution:
+  Benign: 13,484,708 (83.07%)
+  DDOS attack-HOIC: 686,012 (4.23%)
+  DDoS attacks-LOIC-HTTP: 576,191 (3.55%)
+  DoS attacks-Hulk: 461,912 (2.85%)
+  Bot: 286,191 (1.76%)
+  FTP-BruteForce: 193,360 (1.19%)
+  SSH-Bruteforce: 187,589 (1.16%)
+  Infilteration: 161,934 (1.00%)
+  DoS attacks-SlowHTTPTest: 139,890 (0.86%)
+  DoS attacks-GoldenEye: 41,508 (0.26%)
+  DoS attacks-Slowloris: 10,990 (0.07%)
+  DDOS attack-LOIC-UDP: 1,730 (0.01%)
+  Brute Force -Web: 611 (0.00%)
+  Brute Force -XSS: 230 (0.00%)
+  SQL Injection: 87 (0.00%)
+  Label: 59 (0.00%)
+
+Missing Values (NaN):
+  Total NaN cells:   64,205 (0.005%)
+  Affected columns:  76
+    - Flow Duration: 59
+    - Tot Fwd Pkts: 59
+    - Tot Bwd Pkts: 59
+    - TotLen Fwd Pkts: 59
+    - TotLen Bwd Pkts: 59
+
+Infinite Values (Inf):
+  Total Inf cells:   131,799 (0.010%)
+  Affected columns:  2
+    - Flow Byts/s: 36,039
+    - Flow Pkts/s: 95,760
+
+Duplicate Rows:      433,253 (2.669%)
+================================================================================
+
+[2026-01-25 12:56:55] [SUCCESS] Module 1 completed successfully!
+
+[2026-01-25 12:57:06] [SUCCESS] ✓ Module 1 checkpoint saved: module1_checkpoint.joblib
+
+
+[2026-01-25 12:57:06] [SUCCESS] Requested modules completed!
+(venv) paudeladrin@instance-20260123-213323:~/Nids$ 

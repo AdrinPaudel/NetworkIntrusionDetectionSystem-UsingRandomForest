@@ -20,6 +20,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+import gc
 from datetime import datetime
 from pathlib import Path
 
@@ -29,6 +30,8 @@ from sklearn.metrics import (
     f1_score, accuracy_score, precision_score, recall_score,
     classification_report, confusion_matrix, make_scorer
 )
+
+import config
 
 # Configure warnings
 warnings.filterwarnings('ignore', category=FutureWarning)
@@ -134,20 +137,12 @@ def load_preprocessed_data(data_dir='data/preprocessed'):
 def define_hyperparameter_search_space():
     """
     Define the hyperparameter search space for RandomizedSearchCV.
-    Memory-optimized version for large datasets.
+    Uses configuration from config.py for consistency.
     
     Returns:
-        dict: Parameter distributions
+        dict: Parameter distributions from config
     """
-    param_distributions = {
-        'n_estimators': [50, 75, 100, 150],  # Reduced max to 150 to save memory
-        'max_depth': [15, 20, 25, 30, 35, 40],  # Removed extreme values
-        'min_samples_split': [2, 5, 10, 15],  # Fewer options
-        'min_samples_leaf': [1, 2, 4, 7],  # Fewer options
-        'max_features': ['sqrt', 'log2'],  # Removed None to reduce complexity
-        'bootstrap': [True],  # Only True for memory efficiency
-        'class_weight': ['balanced_subsample', None]  # Removed 'balanced'
-    }
+    param_distributions = config.PARAM_DISTRIBUTIONS
     
     # Calculate total combinations
     total_combinations = 1
@@ -193,11 +188,11 @@ def perform_hyperparameter_tuning(X_train, y_train, n_iter=20, cv=5, random_stat
     
     # Create base estimator
     log_step("\nInitializing Random Forest base estimator...", "SUBSTEP")
-    log_step(f"Using all available cores for maximum speed (32 vCPU)", "SUBSTEP")
+    log_step(f"Using ALL available cores (n_jobs=-1) for maximum speed", "SUBSTEP")
     
     rf = RandomForestClassifier(
         random_state=random_state,
-        n_jobs=-1,  # Use ALL cores for parallel tree building
+        n_jobs=config.N_JOBS_LIGHT,  # Bound per-estimator parallelism to 16 threads
         verbose=0
     )
     
@@ -210,7 +205,8 @@ def perform_hyperparameter_tuning(X_train, y_train, n_iter=20, cv=5, random_stat
     log_step(f"  Iterations: {n_iter}")
     log_step(f"  Cross-validation folds: {cv}")
     log_step(f"  Scoring: macro F1-score")
-    log_step(f"  Parallel jobs: {n_jobs} (all cores)")
+    log_step(f"  Parallel CV jobs: {config.N_JOBS_CV} (balanced for 64 vCPU)")
+    log_step(f"  RF jobs per CV: {config.N_JOBS_LIGHT} threads")
     log_step(f"  Total model fits: {n_iter * cv}")
     
     random_search = RandomizedSearchCV(
@@ -219,9 +215,10 @@ def perform_hyperparameter_tuning(X_train, y_train, n_iter=20, cv=5, random_stat
         n_iter=n_iter,
         cv=cv,
         scoring=scoring,
-        n_jobs=2,  # Only 2 CV folds in parallel to prevent OOM with 10M samples
+        n_jobs=config.N_JOBS_CV,  # 4 CV jobs * 16 threads each ≈ 64 logical threads
         random_state=random_state,
         verbose=2,
+        pre_dispatch='n_jobs',  # Load only current batch to save memory
         return_train_score=False,  # Don't store train scores to save memory
         refit=True  # Refit best model on full training set
     )
@@ -233,6 +230,11 @@ def perform_hyperparameter_tuning(X_train, y_train, n_iter=20, cv=5, random_stat
     log_step("")
     
     random_search.fit(X_train, y_train)
+    
+    # Aggressive garbage collection after fitting
+    if config.ENABLE_MEMORY_OPTIMIZATION:
+        log_step("Running garbage collection to free memory...", "SUBSTEP")
+        gc.collect()
     
     elapsed = time.time() - start_time
     
@@ -320,7 +322,7 @@ def train_final_model(X_train, y_train, best_params, random_state=42, n_jobs=-1)
     final_model = RandomForestClassifier(
         **best_params,
         random_state=random_state,
-        n_jobs=n_jobs,
+        n_jobs=config.N_JOBS,  # Use all logical CPUs for final training
         verbose=0
     )
     

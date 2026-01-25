@@ -1,5 +1,5 @@
 {
-  "training_date": "2026-01-25T00:45:18.799807",
+  "training_date": "2026-01-25T21:25:31.172512",
   "model_type": "RandomForestClassifier",
   "n_classes": 7,
   "class_names": [
@@ -12,42 +12,42 @@
     "Web Attack"
   ],
   "hyperparameter_tuning": {
-    "n_iterations": 15,
-    "cv_folds": 5,
-    "best_cv_score": 0.9010614405416233,
-    "best_cv_std": 0.0061111605566014976,
+    "n_iterations": 20,
+    "cv_folds": 3,
+    "best_cv_score": 0.8825767101713082,
+    "best_cv_std": 0.000849814525512131,
     "best_params": {
       "n_estimators": 100,
-      "min_samples_split": 10,
+      "min_samples_split": 5,
       "min_samples_leaf": 1,
-      "max_features": "log2",
-      "max_depth": 40,
+      "max_features": "sqrt",
+      "max_depth": 30,
       "class_weight": null,
       "bootstrap": true
     },
-    "tuning_time_minutes": 275.1120910088221
+    "tuning_time_minutes": 165.0974014321963
   },
   "final_training": {
-    "training_time_minutes": 5.489527837435404,
-    "n_samples": 10398554,
-    "n_features": 80,
+    "training_time_minutes": 4.0607887506484985,
+    "n_samples": 9806779,
+    "n_features": 45,
     "n_estimators": 100,
-    "total_nodes": 13651502,
-    "avg_tree_depth": 40.0
+    "total_nodes": 7779200,
+    "avg_tree_depth": 30.0
   },
   "feature_importances": {
     "top_10_features": [
       "Dst Port",
-      "Fwd Seg Size Min",
       "Init Fwd Win Byts",
       "Fwd Header Len",
-      "TotLen Fwd Pkts",
+      "Fwd Seg Size Min",
+      "Fwd Pkt Len Mean",
       "Subflow Fwd Byts",
       "Bwd Pkt Len Std",
-      "Tot Bwd Pkts",
-      "Bwd Header Len",
-      "Tot Fwd Pkts"
+      "Flow Duration",
+      "Subflow Bwd Byts",
+      "Fwd Pkt Len Max"
     ],
-    "top_10_cumulative_importance": 0.3381109291924149
+    "top_10_cumulative_importance": 0.40882826378885556
   }
 }

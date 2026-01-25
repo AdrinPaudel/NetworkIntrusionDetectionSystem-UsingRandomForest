@@ -1,7 +1,7 @@
 ================================================================================
                     DATA PREPROCESSING REPORT
                     CICIDS2018 Dataset
-               Generated: 2026-01-24 18:48:09
+               Generated: 2026-01-25 13:48:01
 ================================================================================
 
 1. DATA CLEANING
@@ -10,28 +10,28 @@
    Initial Dataset:
      Rows: 16,233,002
      Columns: 80
-     Memory: 11.01 GB
+     Memory: 0.00 GB
 
    Data Quality Issues Found:
-     Rows with NaN: 59,780 (0.370%)
-     Columns with NaN: 1
-     Rows with Inf: 36,039 (0.220%)
-     Columns with Inf: 2
-     Duplicate rows: 4,157,778 (25.610%)
+     Rows with NaN: 0 (0.368%)
+     Columns with NaN: 0
+     Rows with Inf: 0 (0.222%)
+     Columns with Inf: 0
+     Duplicate rows: 0 (0.000%)
 
    Cleaning Actions:
      ✓ Removed useless columns: Flow ID, Src IP, Dst IP, Src Port, Timestamp
      ✓ Removed bad 'Label' class: 59 rows (header misplacement)
-     ✓ Removed all NaN rows: 59,780
-     ✓ Removed all Inf rows: 36,039
-     ✓ Removed duplicate rows: 4,157,778
+     ✓ Removed all NaN rows: 0
+     ✓ Removed all Inf rows: 0
+     ✓ Removed duplicate rows: 0
 
    Final Clean Dataset:
      Rows: 11,979,405
      Columns: 79
-     Memory: 7.91 GB
-     Total removed: 4,253,597 rows (26.200%)
-     Memory saved: 3.10 GB
+     Memory: 0.00 GB
+     Total removed: 4,253,597 rows (26.203%)
+     Memory saved: 0.00 GB
 
    Quality Assessment: ⚠ ACCEPTABLE
    Data loss <5%: Within acceptable range
@@ -106,7 +106,7 @@
 
    Stratification Verification:
      Stratified: ✓ Yes
-     Max class distribution difference: 0.010%
+     Max class distribution difference: 0.000%
      ✓ VERIFIED: Train and test have same class proportions
 
 5. FEATURE SCALING
@@ -137,7 +137,7 @@
      Reason: Simulates real-world deployment conditions
 
    Class Distribution Changes:
-     Classes oversampled: 6
+     Classes oversampled: 2
 
      Before SMOTE:
        Class 0:  8,502,430 ( 88.72%)
@@ -149,50 +149,33 @@
        Class 6:        694 (  0.01%)
 
      After SMOTE:
-       Class 0:  8,502,430 ( 81.77%)
-       Class 1:    255,072 (  2.45%) [+139,444, 2.2x]
-       Class 2:    255,072 (  2.45%) [+179,791, 3.4x]
-       Class 3:    620,764 (  5.97%)
-       Class 4:    255,072 (  2.45%) [+97,818, 1.6x]
-       Class 5:    255,072 (  2.45%) [+143,599, 2.3x]
-       Class 6:    255,072 (  2.45%) [+254,378, 367.5x]
+       Class 0:  8,502,430 ( 86.70%)
+       Class 1:    115,628 (  1.18%)
+       Class 2:     75,281 (  0.77%)
+       Class 3:    620,764 (  6.33%)
+       Class 4:    157,254 (  1.60%)
+       Class 5:    143,752 (  1.47%) [+32,279, 1.3x]
+       Class 6:    191,670 (  1.95%) [+190,976, 276.2x]
 
    SMOTE Summary:
      Samples before: 9,583,524
-     Samples after: 10,398,554
-     Synthetic samples: 815,030
-     Increase: 8.50%
-
-7. FEATURE SELECTION (RFE)
-   ======================================================================
-
-   Status: DISABLED
-   Reason: ENABLE_RFE=False in config.py
-   To enable: Set ENABLE_RFE=True (adds 20-30 min runtime)
+     Samples after: 9,806,779
+     Synthetic samples: 223,255
+     Increase: 2.33%
 
 ================================================================================
                          FINAL PREPROCESSED DATASET
 ================================================================================
-
-Training Set:
-  Samples: 10,398,554 (after SMOTE)
-  Features: 80
-  Classes: 7
-
-Test Set:
-  Samples: 2,395,881 (original distribution)
-  Features: 80
-  Classes: 7
 
 ================================================================================
                       PREPROCESSING QUALITY ASSESSMENT
 ================================================================================
 
 Data Cleaning:
-  ✓ NaN values removed (0.370%)
-  ✓ Inf values removed (0.220%)
-  ✓ Duplicates removed (25.610%)
-  ✓ Data loss: 26.200% (acceptable)
+  ✓ NaN values removed (0.368%)
+  ✓ Inf values removed (0.222%)
+  ✓ Duplicates removed (0.000%)
+  ✓ Data loss: 26.203% (acceptable)
 
 Label Consolidation:
   ✓ 15 classes → 7 classes
@@ -206,7 +189,7 @@ Encoding:
 
 Train-Test Split:
   ✓ 80:20 ratio achieved
-  ✓ Stratification verified (max diff 0.010%)
+  ✓ Stratification verified (max diff 0.000%)
   ✓ Reproducible (random_state=42)
 
 Feature Scaling:
@@ -228,6 +211,6 @@ Data Quality: Ready for model training
 Expected Performance: >96% macro F1-score (target)
 ================================================================================
 
-Report generated: 2026-01-24 18:48:09
+Report generated: 2026-01-25 13:48:01
 Module: Data Preprocessing (Module 3)
 Next step: Model Training (Module 4)

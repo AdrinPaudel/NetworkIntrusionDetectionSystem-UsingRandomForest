@@ -4,6 +4,7 @@ Comprehensive preprocessing pipeline: cleaning, encoding, scaling, SMOTE, and RF
 """
 
 import os
+import time
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -522,7 +523,7 @@ def scale_features(X_train, X_test, scaler_type='standard'):
     return X_train_scaled, X_test_scaled, scaler, scaling_stats
 
 
-def apply_smote(X_train, y_train, target_percentage=0.03, k_neighbors=5, random_state=42):
+def apply_smote(X_train, y_train, target_percentage=0.03, k_neighbors=5, random_state=42, strategy='tiered', tiered_targets=None):
     """
     Apply SMOTE to training data only to balance classes.
     
@@ -533,11 +534,15 @@ def apply_smote(X_train, y_train, target_percentage=0.03, k_neighbors=5, random_
     y_train : pandas.Series
         Training labels
     target_percentage : float
-        Target percentage of majority class for minorities
+        Target percentage for uniform strategy
     k_neighbors : int
         Number of neighbors for SMOTE
     random_state : int
         Random seed
+    strategy : str
+        'uniform' (all minorities to same %) or 'tiered' (different targets per class)
+    tiered_targets : dict
+        {class_index: target_percentage} for tiered strategy
         
     Returns:
     --------
@@ -552,23 +557,32 @@ def apply_smote(X_train, y_train, target_percentage=0.03, k_neighbors=5, random_
     
     # Class distribution before SMOTE
     class_counts_before = y_train.value_counts().sort_index()
-    majority_count = class_counts_before.max()
+    total_samples = len(y_train)
     
     log_message("Class distribution BEFORE SMOTE:", level="INFO")
     for class_idx, count in class_counts_before.items():
-        pct = count / len(y_train) * 100
+        pct = count / total_samples * 100
         log_message(f"  Class {class_idx}: {format_number(count):>10s} ({pct:>6.2f}%)", level="INFO")
     print()
     
-    # Calculate target counts
-    target_count = int(majority_count * target_percentage)
+    # Calculate target counts based on strategy
     sampling_strategy = {}
     
-    for class_idx, count in class_counts_before.items():
-        if count < target_count:
-            sampling_strategy[class_idx] = target_count
+    if strategy == 'tiered' and tiered_targets:
+        log_message(f"Using TIERED sampling strategy", level="INFO")
+        for class_idx, target_pct in tiered_targets.items():
+            current_count = class_counts_before.get(class_idx, 0)
+            target_count = int(total_samples * target_pct)
+            if current_count < target_count:
+                sampling_strategy[class_idx] = target_count
+                log_message(f"  Class {class_idx}: {format_number(current_count)} → {format_number(target_count)} (target: {target_pct*100:.1f}%)", level="INFO")
+    else:
+        log_message(f"Using UNIFORM sampling strategy (target: {target_percentage*100:.1f}%)", level="INFO")
+        target_count = int(total_samples * target_percentage)
+        for class_idx, count in class_counts_before.items():
+            if count < target_count:
+                sampling_strategy[class_idx] = target_count
     
-    log_message(f"Target count for minorities: {format_number(target_count)} (~{target_percentage*100:.1f}% of majority)", level="INFO")
     log_message(f"Classes to oversample: {len(sampling_strategy)}", level="INFO")
     print()
     
@@ -621,6 +635,142 @@ def apply_smote(X_train, y_train, target_percentage=0.03, k_neighbors=5, random_
     return X_train_smoted, y_train_smoted, smote_stats
 
 
+def perform_rf_feature_importance(X_train, y_train, min_features=40, max_features=45, random_state=42):
+    """
+    Perform feature selection using Random Forest Gini importance (Paper 1 method).
+    Fast and effective - achieves 99.9% accuracy, 97.41% F1 in ~10 minutes.
+    
+    Parameters:
+    -----------
+    X_train : pandas.DataFrame
+        Training features (scaled + SMOTEd)
+    y_train : pandas.Series
+        Training labels (SMOTEd)
+    min_features : int
+        Minimum features to keep
+    max_features : int
+        Maximum features to keep
+    random_state : int
+        Random seed
+    
+    Returns:
+    --------
+    X_train_selected : pandas.DataFrame
+        Training data with selected features
+    selected_features : list
+        Selected feature names
+    rf_model : fitted RandomForest object
+    importance_stats : dict
+        Feature importance statistics
+    """
+    log_message("Performing RF Feature Importance Selection (Paper 1 Method)...", level="STEP")
+    log_message("⏱️  Expected time: ~8-12 minutes", level="INFO")
+    print()
+    
+    n_features_before = X_train.shape[1]
+    log_message(f"Initial features: {n_features_before}", level="INFO")
+    log_message(f"Target range: {min_features}-{max_features} features", level="INFO")
+    print()
+    
+    # Use subset for speed if dataset is large
+    use_subset = len(X_train) > 5_000_000
+    if use_subset:
+        subset_size = 2_000_000  # Use 2M samples
+        log_message(f"Dataset is large ({len(X_train):,} samples)", level="WARNING")
+        log_message(f"Using stratified subset of {subset_size:,} samples for speed", level="INFO")
+        
+        from sklearn.model_selection import train_test_split
+        X_subset, _, y_subset, _ = train_test_split(
+            X_train, y_train, 
+            train_size=subset_size,
+            stratify=y_train,
+            random_state=random_state
+        )
+        log_message(f"✓ Subset created: {X_subset.shape[0]:,} samples", level="SUCCESS")
+    else:
+        X_subset = X_train
+        y_subset = y_train
+    
+    # Train Random Forest for importance
+    log_message("Training Random Forest for feature importance...", level="SUBSTEP")
+    start_time = time.time()
+    
+    rf_model = RandomForestClassifier(
+        n_estimators=config.RF_IMPORTANCE_TREES,
+        max_depth=config.RF_IMPORTANCE_MAX_DEPTH,
+        n_jobs=config.RF_IMPORTANCE_N_JOBS,
+        random_state=random_state,
+        verbose=1
+    )
+    
+    log_message(f"RF config: {config.RF_IMPORTANCE_TREES} trees, depth={config.RF_IMPORTANCE_MAX_DEPTH}, n_jobs={config.RF_IMPORTANCE_N_JOBS}", level="INFO")
+    rf_model.fit(X_subset, y_subset)
+    elapsed = time.time() - start_time
+    log_message(f"✓ RF training complete in {elapsed/60:.2f} minutes", level="SUCCESS")
+    print()
+    
+    # Get feature importances
+    log_message("Extracting feature importances...", level="SUBSTEP")
+    importances = rf_model.feature_importances_
+    feature_names = X_train.columns.tolist()
+    
+    importance_df = pd.DataFrame({
+        'feature': feature_names,
+        'importance': importances
+    }).sort_values('importance', ascending=False)
+    
+    log_message("Top 10 Most Important Features:", level="INFO")
+    for idx, row in importance_df.head(10).iterrows():
+        log_message(f"  {row['feature']:<40} {row['importance']:.6f}", level="INFO")
+    print()
+    
+    # Select features based on threshold and target range
+    threshold = config.IMPORTANCE_THRESHOLD
+    features_above_threshold = importance_df[importance_df['importance'] >= threshold]
+    
+    if len(features_above_threshold) < min_features:
+        log_message(f"Only {len(features_above_threshold)} features above threshold - selecting top {min_features}", level="WARNING")
+        selected_features_df = importance_df.head(min_features)
+    elif len(features_above_threshold) > max_features:
+        log_message(f"{len(features_above_threshold)} features above threshold - limiting to top {max_features}", level="INFO")
+        selected_features_df = importance_df.head(max_features)
+    else:
+        log_message(f"Selecting {len(features_above_threshold)} features above threshold {threshold}", level="INFO")
+        selected_features_df = features_above_threshold
+    
+    selected_features = selected_features_df['feature'].tolist()
+    
+    log_message("Feature Selection Summary:", level="INFO")
+    log_message(f"  Original features: {n_features_before}", level="INFO")
+    log_message(f"  Selected features: {len(selected_features)}", level="INFO")
+    log_message(f"  Reduction: {(1 - len(selected_features)/n_features_before)*100:.1f}%", level="INFO")
+    print()
+    
+    # Save feature importance report
+    output_dir = config.DATA_PREPROCESSED_DIR
+    importance_file = os.path.join(output_dir, 'feature_importances.csv')
+    importance_df.to_csv(importance_file, index=False)
+    log_message(f"✓ Feature importances saved to {importance_file}", level="SUCCESS")
+    print()
+    
+    # Select features from training data
+    X_train_selected = X_train[selected_features]
+    
+    total_time = time.time() - start_time
+    log_message(f"✓ Feature selection complete in {total_time/60:.2f} minutes", level="SUCCESS")
+    print()
+    
+    importance_stats = {
+        'n_features_before': n_features_before,
+        'n_features_selected': len(selected_features),
+        'selected_features': selected_features,
+        'importance_threshold': threshold,
+        'time_minutes': total_time / 60
+    }
+    
+    return X_train_selected, selected_features, rf_model, importance_stats
+
+
 def perform_rfe(X_train, y_train, min_features=20, cv_folds=5, random_state=42):
     """
     Perform Recursive Feature Elimination with Cross-Validation.
@@ -657,17 +807,39 @@ def perform_rfe(X_train, y_train, min_features=20, cv_folds=5, random_state=42):
     log_message(f"Target range: {config.RFE_TARGET_FEATURES_MIN}-{config.RFE_TARGET_FEATURES_MAX} features", level="INFO")
     print()
     
-    # Setup Random Forest estimator
+    # Setup Random Forest estimator - use lighter config to avoid OOM
     log_message("Setting up Random Forest estimator for RFE...", level="SUBSTEP")
+    log_message("⚠️  Using memory-optimized configuration", level="WARNING")
     estimator = RandomForestClassifier(
-        n_estimators=100,
-        max_depth=20,
+        n_estimators=50,  # Reduced from 100 to save memory
+        max_depth=15,     # Reduced from 20 to save memory
         random_state=random_state,
-        n_jobs=-1,
+        n_jobs=config.N_JOBS,  # Use config setting (6 cores - balanced)
         verbose=0
     )
-    log_message("✓ Estimator configured", level="SUCCESS")
+    log_message(f"✓ Estimator configured (50 trees, depth=15, n_jobs={config.N_JOBS})", level="SUCCESS")
     print()
+    
+    # Use a subset of data for RFE if dataset is very large
+    use_subset = len(X_train) > 5_000_000
+    if use_subset:
+        subset_size = 2_000_000  # Use 2M samples for RFE
+        log_message(f"Dataset is large ({len(X_train):,} samples)", level="WARNING")
+        log_message(f"Using random subset of {subset_size:,} samples for RFE to avoid OOM", level="WARNING")
+        
+        # Stratified sample
+        from sklearn.model_selection import train_test_split
+        X_rfe_subset, _, y_rfe_subset, _ = train_test_split(
+            X_train, y_train, 
+            train_size=subset_size,
+            stratify=y_train,
+            random_state=random_state
+        )
+        log_message(f"✓ Subset created: {len(X_rfe_subset):,} samples (stratified)", level="SUCCESS")
+        print()
+    else:
+        X_rfe_subset = X_train
+        y_rfe_subset = y_train
     
     # Setup RFECV
     log_message(f"Configuring RFECV with {cv_folds}-fold cross-validation...", level="SUBSTEP")
@@ -677,19 +849,21 @@ def perform_rfe(X_train, y_train, min_features=20, cv_folds=5, random_state=42):
         step=1,
         cv=cv_folds,
         scoring='f1_macro',
-        n_jobs=-1,
-        verbose=1
+        n_jobs=config.N_JOBS_LIGHT,  # Use lighter parallelization for CV (2 cores)
+        verbose=2
     )
-    log_message("✓ RFECV configured", level="SUCCESS")
+    log_message(f"✓ RFECV configured (n_jobs={config.N_JOBS_LIGHT} for memory safety)", level="SUCCESS")
     print()
     
-    # Run RFECV
+    # Run RFECV on subset
     log_message("Running RFECV (this will take a while)...", level="SUBSTEP")
+    if use_subset:
+        log_message(f"Training on {len(X_rfe_subset):,} samples", level="INFO")
     
     timer = Timer("RFE", verbose=False)
     timer.__enter__()
     
-    rfecv.fit(X_train, y_train)
+    rfecv.fit(X_rfe_subset, y_rfe_subset)  # Use subset to avoid OOM
     
     timer.__exit__()
     
@@ -725,18 +899,20 @@ def perform_rfe(X_train, y_train, min_features=20, cv_folds=5, random_state=42):
     return X_train_rfe, selected_features, rfecv, rfe_stats
 
 
-def preprocess_data(df, label_col, protocol_col=None):
+def preprocess_data(df, label_col, protocol_col=None, resume_from=None):
     """
-    Main preprocessing pipeline.
+    Main preprocessing pipeline with checkpoint resume support.
     
     Parameters:
     -----------
     df : pandas.DataFrame
-        Raw dataset
+        Raw dataset (None if resuming from checkpoint)
     label_col : str
         Label column name
     protocol_col : str, optional
         Protocol column name
+    resume_from : int, optional
+        Checkpoint to resume from (1=cleaned, 2=encoded, 3=smoted)
         
     Returns:
     --------
@@ -757,79 +933,184 @@ def preprocess_data(df, label_col, protocol_col=None):
     
     all_stats = {}
     
+    # =========================================================================
+    # CHECKPOINT RESUME LOGIC
+    # =========================================================================
+    if resume_from is not None:
+        log_message(f"RESUME MODE: Loading from Checkpoint {resume_from}", level="INFO")
+        print()
+        
+        if resume_from == 3:
+            # Resume from after SMOTE (go straight to RFE)
+            log_message("Loading Checkpoint 3: train_scaled_smoted.parquet", level="SUBSTEP")
+            train_smote_path = os.path.join(output_dir, 'train_scaled_smoted.parquet')
+            test_scaled_path = os.path.join(output_dir, 'test_scaled.parquet')
+            
+            if not os.path.exists(train_smote_path):
+                log_message(f"ERROR: Checkpoint 3 not found: {train_smote_path}", level="ERROR")
+                raise FileNotFoundError(f"Checkpoint 3 missing: {train_smote_path}")
+            
+            df_train = pd.read_parquet(train_smote_path)
+            df_test = pd.read_parquet(test_scaled_path)
+            
+            X_train_smoted = df_train.drop('Label', axis=1)
+            y_train_smoted = df_train['Label']
+            X_test_scaled = df_test.drop('Label', axis=1)
+            y_test = df_test['Label']
+            
+            log_message(f"✓ Loaded: {X_train_smoted.shape[0]:,} training samples", level="SUCCESS")
+            log_message(f"✓ Loaded: {X_test_scaled.shape[0]:,} test samples", level="SUCCESS")
+            
+            # Load scaler and label_encoder
+            scaler = joblib.load(os.path.join(output_dir, 'scaler.joblib'))
+            label_encoder = joblib.load(os.path.join(output_dir, 'label_encoder.joblib'))
+            
+            log_message(f"✓ Loaded scaler and label encoder", level="SUCCESS")
+            print()
+            
+            # Set placeholder stats (already done in previous run)
+            all_stats['cleaning'] = {'applied': True, 'loaded_from_checkpoint': True}
+            all_stats['consolidation'] = {'applied': True, 'loaded_from_checkpoint': True}
+            all_stats['encoding'] = {'applied': True, 'loaded_from_checkpoint': True, 'n_classes': len(label_encoder.classes_)}
+            all_stats['split'] = {'applied': True, 'loaded_from_checkpoint': True}
+            all_stats['scaling'] = {'applied': True, 'loaded_from_checkpoint': True}
+            all_stats['smote'] = {'applied': True, 'loaded_from_checkpoint': True}
+            
+            # Jump to RFE step
+            log_message("Skipped: Steps 1-6 (loaded from checkpoint)", level="INFO")
+            print()
+            
+        elif resume_from == 2:
+            # Resume from after encoding (redo split, scale, SMOTE, RFE)
+            log_message("Loading Checkpoint 2: train_encoded.parquet", level="SUBSTEP")
+            # TODO: Implement if needed
+            raise NotImplementedError("Checkpoint 2 resume not yet implemented")
+        
+        elif resume_from == 1:
+            # Resume from after cleaning (redo encoding, split, scale, SMOTE, RFE)
+            log_message("Loading Checkpoint 1: cleaned_data.parquet", level="SUBSTEP")
+            # TODO: Implement if needed
+            raise NotImplementedError("Checkpoint 1 resume not yet implemented")
+    
+    # =========================================================================
+    # NORMAL EXECUTION (No Resume)
+    # =========================================================================
+    else:
+        log_message("Starting fresh preprocessing pipeline", level="INFO")
+        print()
+    
     try:
-        # Step 1: Clean data
-        df_clean, cleaning_stats = clean_data(df, label_col)
-        all_stats['cleaning'] = cleaning_stats
-        
-        # Save checkpoint 1
-        clean_path = os.path.join(output_dir, 'cleaned_data.parquet')
-        df_clean.to_parquet(clean_path, index=False)
-        log_message(f"✓ Checkpoint 1 saved: cleaned_data.parquet", level="SUCCESS")
-        print()
-        
-        # Step 2: Consolidate labels
-        df_consolidated, consolidation_stats = consolidate_labels(df_clean, label_col)
-        all_stats['consolidation'] = consolidation_stats
-        
-        # Step 3: Encode features
-        df_encoded, label_encoder, encoding_stats = encode_features(df_consolidated, label_col, protocol_col)
-        all_stats['encoding'] = encoding_stats
-        
-        # Step 4: Split data
-        X_train, X_test, y_train, y_test, split_stats = split_data(
-            df_encoded, label_col,
-            test_size=config.TEST_SIZE,
-            random_state=config.RANDOM_STATE
-        )
-        all_stats['split'] = split_stats
-        
-        # Save checkpoint 2
-        train_enc_path = os.path.join(output_dir, 'train_encoded.parquet')
-        test_enc_path = os.path.join(output_dir, 'test_encoded.parquet')
-        pd.concat([X_train, y_train], axis=1).to_parquet(train_enc_path, index=False)
-        pd.concat([X_test, y_test], axis=1).to_parquet(test_enc_path, index=False)
-        log_message(f"✓ Checkpoint 2 saved: train_encoded.parquet, test_encoded.parquet", level="SUCCESS")
-        print()
-        
-        # Step 5: Scale features
-        X_train_scaled, X_test_scaled, scaler, scaling_stats = scale_features(
-            X_train, X_test,
-            scaler_type=config.SCALER_TYPE
-        )
-        all_stats['scaling'] = scaling_stats
-        
-        # Save scaler
-        scaler_path = os.path.join(output_dir, 'scaler.joblib')
-        joblib.dump(scaler, scaler_path)
-        log_message(f"✓ Scaler saved: scaler.joblib", level="SUCCESS")
-        print()
-        
-        # Step 6: Apply SMOTE
-        if config.APPLY_SMOTE:
-            X_train_smoted, y_train_smoted, smote_stats = apply_smote(
-                X_train_scaled, y_train,
-                target_percentage=config.SMOTE_TARGET_PERCENTAGE,
-                k_neighbors=config.SMOTE_K_NEIGHBORS,
+        # Step 1: Clean data (skip if resumed)
+        if resume_from is None:
+            df_clean, cleaning_stats = clean_data(df, label_col)
+            all_stats['cleaning'] = cleaning_stats
+            
+            # Save checkpoint 1
+            clean_path = os.path.join(output_dir, 'cleaned_data.parquet')
+            df_clean.to_parquet(clean_path, index=False)
+            log_message(f"✓ Checkpoint 1 saved: cleaned_data.parquet", level="SUCCESS")
+            print()
+            
+            # Step 2: Consolidate labels
+            df_consolidated, consolidation_stats = consolidate_labels(df_clean, label_col)
+            all_stats['consolidation'] = consolidation_stats
+            
+            # Step 3: Encode features
+            df_encoded, label_encoder, encoding_stats = encode_features(df_consolidated, label_col, protocol_col)
+            all_stats['encoding'] = encoding_stats
+            
+            # Step 4: Split data
+            X_train, X_test, y_train, y_test, split_stats = split_data(
+                df_encoded, label_col,
+                test_size=config.TEST_SIZE,
                 random_state=config.RANDOM_STATE
             )
-            all_stats['smote'] = smote_stats
-        else:
-            log_message("SMOTE disabled, skipping...", level="WARNING")
-            X_train_smoted = X_train_scaled
-            y_train_smoted = y_train
-            all_stats['smote'] = {'applied': False}
+            all_stats['split'] = split_stats
+            
+            # Save checkpoint 2
+            train_enc_path = os.path.join(output_dir, 'train_encoded.parquet')
+            test_enc_path = os.path.join(output_dir, 'test_encoded.parquet')
+            pd.concat([X_train, y_train], axis=1).to_parquet(train_enc_path, index=False)
+            pd.concat([X_test, y_test], axis=1).to_parquet(test_enc_path, index=False)
+            log_message(f"✓ Checkpoint 2 saved: train_encoded.parquet, test_encoded.parquet", level="SUCCESS")
+            print()
+            
+            # Step 5: Scale features
+            X_train_scaled, X_test_scaled, scaler, scaling_stats = scale_features(
+                X_train, X_test,
+                scaler_type=config.SCALER_TYPE
+            )
+            all_stats['scaling'] = scaling_stats
+            
+            # Save scaler
+            scaler_path = os.path.join(output_dir, 'scaler.joblib')
+            joblib.dump(scaler, scaler_path)
+            
+            # Also save label encoder here for checkpoint resume
+            label_encoder_path = os.path.join(output_dir, 'label_encoder.joblib')
+            joblib.dump(label_encoder, label_encoder_path)
+            
+            log_message(f"✓ Scaler saved: scaler.joblib", level="SUCCESS")
+            log_message(f"✓ Label encoder saved: label_encoder.joblib", level="SUCCESS")
+            print()
+            
+            # Step 6: Apply SMOTE
+            if config.APPLY_SMOTE:
+                smote_strategy = getattr(config, 'SMOTE_STRATEGY', 'uniform')
+                tiered_targets = getattr(config, 'SMOTE_TIERED_TARGETS', None)
+                
+                X_train_smoted, y_train_smoted, smote_stats = apply_smote(
+                    X_train_scaled, y_train,
+                    target_percentage=config.SMOTE_TARGET_PERCENTAGE,
+                    k_neighbors=config.SMOTE_K_NEIGHBORS,
+                    random_state=config.RANDOM_STATE,
+                    strategy=smote_strategy,
+                    tiered_targets=tiered_targets
+                )
+                all_stats['smote'] = smote_stats
+            else:
+                log_message("SMOTE disabled, skipping...", level="WARNING")
+                X_train_smoted = X_train_scaled
+                y_train_smoted = y_train
+                all_stats['smote'] = {'applied': False}
+            
+            # Save checkpoint 3
+            train_smote_path = os.path.join(output_dir, 'train_scaled_smoted.parquet')
+            test_scaled_path = os.path.join(output_dir, 'test_scaled.parquet')
+            pd.concat([X_train_smoted, y_train_smoted], axis=1).to_parquet(train_smote_path, index=False)
+            pd.concat([X_test_scaled, y_test], axis=1).to_parquet(test_scaled_path, index=False)
+            log_message(f"✓ Checkpoint 3 saved: train_scaled_smoted.parquet, test_scaled.parquet", level="SUCCESS")
+            print()
         
-        # Save checkpoint 3
-        train_smote_path = os.path.join(output_dir, 'train_scaled_smoted.parquet')
-        test_scaled_path = os.path.join(output_dir, 'test_scaled.parquet')
-        pd.concat([X_train_smoted, y_train_smoted], axis=1).to_parquet(train_smote_path, index=False)
-        pd.concat([X_test_scaled, y_test], axis=1).to_parquet(test_scaled_path, index=False)
-        log_message(f"✓ Checkpoint 3 saved: train_scaled_smoted.parquet, test_scaled.parquet", level="SUCCESS")
-        print()
-        
-        # Step 7: Feature selection (RFE)
-        if config.ENABLE_RFE:
+        # Step 7: Feature selection - RF Importance (Paper 1) or RFE (Legacy)
+        if config.ENABLE_RF_IMPORTANCE:
+            X_train_selected, selected_features, rf_model, importance_stats = perform_rf_feature_importance(
+                X_train_smoted, y_train_smoted,
+                min_features=config.TARGET_FEATURES_MIN,
+                max_features=config.TARGET_FEATURES_MAX,
+                random_state=config.RANDOM_STATE
+            )
+            all_stats['feature_importance'] = importance_stats
+            
+            # Apply same feature selection to test
+            X_test_selected = X_test_scaled[selected_features]
+            
+            # Save checkpoint 4
+            train_final_path = os.path.join(output_dir, 'train_final.parquet')
+            test_final_path = os.path.join(output_dir, 'test_final.parquet')
+            pd.concat([X_train_selected, y_train_smoted], axis=1).to_parquet(train_final_path, index=False)
+            pd.concat([X_test_selected, y_test], axis=1).to_parquet(test_final_path, index=False)
+            
+            # Save RF importance model
+            rf_path = os.path.join(output_dir, 'rf_importance_model.joblib')
+            joblib.dump(rf_model, rf_path)
+            
+            log_message(f"✓ Checkpoint 4 saved: train_final.parquet, test_final.parquet", level="SUCCESS")
+            log_message(f"✓ RF importance model saved: rf_importance_model.joblib", level="SUCCESS")
+            
+            X_train_final = X_train_selected
+            X_test_final = X_test_selected
+        elif config.ENABLE_RFE:
             X_train_rfe, selected_features, rfe_model, rfe_stats = perform_rfe(
                 X_train_smoted, y_train_smoted,
                 min_features=config.RFE_MIN_FEATURES,
@@ -857,17 +1138,17 @@ def preprocess_data(df, label_col, protocol_col=None):
             X_train_final = X_train_rfe
             X_test_final = X_test_rfe
         else:
-            log_message("RFE disabled (ENABLE_RFE=False), skipping...", level="WARNING")
-            log_message("To enable RFE, set ENABLE_RFE=True in config.py", level="INFO")
-            all_stats['rfe'] = {'applied': False}
+            log_message("Feature selection disabled (both RF_IMPORTANCE and RFE are False)", level="WARNING")
+            log_message("Using all 80 features - model performance may be suboptimal", level="WARNING")
+            all_stats['feature_selection'] = {'applied': False}
             
-            # Save checkpoint 4 without RFE
+            # Save checkpoint 4 without feature selection
             train_final_path = os.path.join(output_dir, 'train_final.parquet')
             test_final_path = os.path.join(output_dir, 'test_final.parquet')
             pd.concat([X_train_smoted, y_train_smoted], axis=1).to_parquet(train_final_path, index=False)
             pd.concat([X_test_scaled, y_test], axis=1).to_parquet(test_final_path, index=False)
             
-            log_message(f"✓ Checkpoint 4 saved: train_final.parquet, test_final.parquet (no RFE)", level="SUCCESS")
+            log_message(f"✓ Checkpoint 4 saved: train_final.parquet, test_final.parquet (no feature selection)", level="SUCCESS")
             
             X_train_final = X_train_smoted
             X_test_final = X_test_scaled

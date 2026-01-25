@@ -25,11 +25,11 @@ def run_module_2(df, label_col, protocol_col):
     return exploration_stats
 
 
-def run_module_3(df, label_col, protocol_col):
+def run_module_3(df, label_col, protocol_col, resume_from=None):
     """Run Module 3: Data Preprocessing"""
     log_message("Starting Module 3: Data Preprocessing", level="INFO")
     from src.preprocessor import preprocess_data
-    preprocessing_result = preprocess_data(df, label_col, protocol_col)
+    preprocessing_result = preprocess_data(df, label_col, protocol_col, resume_from=resume_from)
     return preprocessing_result
 
 
@@ -41,9 +41,9 @@ def run_module_4():
         data_dir='data/preprocessed',
         model_dir='trained_model',
         reports_dir='reports/training',
-        n_iter=15,  # 15-20 iterations as requested
-        cv=5,
-        random_state=42
+        n_iter=config.N_ITER_SEARCH,  # Use config setting (50 iterations)
+        cv=config.CV_FOLDS,
+        random_state=config.RANDOM_STATE
     )
     return training_results
 
@@ -148,6 +148,13 @@ Examples:
         help='Run specific module(s). Can be specified multiple times.'
     )
     
+    parser.add_argument(
+        '--resume-from',
+        type=int,
+        choices=[1, 2, 3],
+        help='Resume Module 3 from checkpoint (1=cleaned, 2=encoded, 3=smoted)'
+    )
+    
     args = parser.parse_args()
     
     # If no arguments, show help
@@ -185,13 +192,22 @@ Examples:
                 exploration_stats = run_module_2(df, label_col, protocol_col)
             
             elif module_num == 3:
-                if df is None:
-                    log_message("Module 3 requires Module 1 data. Loading...", 
-                               level="INFO")
-                    df, label_col, protocol_col, load_stats = run_module_1()
-                    # Skip Module 2 - exploration not needed for preprocessing
+                resume_from = getattr(args, 'resume_from', None)
                 
-                preprocessing_result = run_module_3(df, label_col, protocol_col)
+                if resume_from:
+                    log_message(f"Resuming Module 3 from checkpoint {resume_from}", level="INFO")
+                    # Don't load Module 1 data if resuming
+                    df = None
+                    label_col = None
+                    protocol_col = None
+                else:
+                    if df is None:
+                        log_message("Module 3 requires Module 1 data. Loading...", 
+                                   level="INFO")
+                        df, label_col, protocol_col, load_stats = run_module_1()
+                        # Skip Module 2 - exploration not needed for preprocessing
+                
+                preprocessing_result = run_module_3(df, label_col, protocol_col, resume_from=resume_from)
             
             elif module_num == 4:
                 # Module 4 loads data from preprocessed files
