@@ -1,0 +1,233 @@
+================================================================================
+                    DATA PREPROCESSING REPORT
+                    CICIDS2018 Dataset
+               Generated: 2026-01-24 18:48:09
+================================================================================
+
+1. DATA CLEANING
+   ======================================================================
+
+   Initial Dataset:
+     Rows: 16,233,002
+     Columns: 80
+     Memory: 11.01 GB
+
+   Data Quality Issues Found:
+     Rows with NaN: 59,780 (0.370%)
+     Columns with NaN: 1
+     Rows with Inf: 36,039 (0.220%)
+     Columns with Inf: 2
+     Duplicate rows: 4,157,778 (25.610%)
+
+   Cleaning Actions:
+     ✓ Removed useless columns: Flow ID, Src IP, Dst IP, Src Port, Timestamp
+     ✓ Removed bad 'Label' class: 59 rows (header misplacement)
+     ✓ Removed all NaN rows: 59,780
+     ✓ Removed all Inf rows: 36,039
+     ✓ Removed duplicate rows: 4,157,778
+
+   Final Clean Dataset:
+     Rows: 11,979,405
+     Columns: 79
+     Memory: 7.91 GB
+     Total removed: 4,253,597 rows (26.200%)
+     Memory saved: 3.10 GB
+
+   Quality Assessment: ⚠ ACCEPTABLE
+   Data loss <5%: Within acceptable range
+
+2. LABEL CONSOLIDATION
+   ======================================================================
+
+   Consolidation Strategy: Merge attack subcategories into parent classes
+     Original classes: 15
+     Consolidated classes: 7
+     Reduction: 8 classes
+
+   Consolidation Mapping:
+     • All DDoS variants → DDoS (LOIC-HTTP, LOIC-UDP, HOIC)
+     • All DoS variants → DoS (Hulk, GoldenEye, Slowloris, SlowHTTPTest)
+     • All Brute Force variants → Brute Force (FTP, SSH, Web, XSS)
+     • All Web attacks → Web Attack (SQL Injection, XSS, Web)
+     • Bot → Botnet
+     • Infilteration (typo) → Infiltration
+
+   Final Class Distribution:
+     Benign              :   10,628,038 ( 88.72%)
+     DDoS                :      775,955 (  6.48%)
+     DoS                 :      196,568 (  1.64%)
+     Botnet              :      144,535 (  1.21%)
+     Infiltration        :      139,341 (  1.16%)
+     Brute Force         :       94,101 (  0.79%)
+     Web Attack          :          867 (  0.01%)
+
+3. CATEGORICAL ENCODING
+   ======================================================================
+
+   Encoding Methods Applied:
+     • Protocol column: One-hot encoding (creates binary columns)
+     • Target (Label): Label encoding (8 classes → integers 0-7)
+
+   Protocol One-Hot Encoding:
+     ✓ Created: Protocol_0
+     ✓ Created: Protocol_17
+     ✓ Created: Protocol_6
+     Total columns created: 3
+
+   Target Label Encoding:
+     Classes encoded: 7
+       0: Benign
+       1: Botnet
+       2: Brute Force
+       3: DDoS
+       4: DoS
+       5: Infiltration
+       6: Web Attack
+
+   Columns After Encoding:
+     Before: 79
+     After: 81
+     Added: +2
+     ✓ All categorical features converted to numerical
+
+4. TRAIN-TEST SPLIT
+   ======================================================================
+
+   Split Configuration:
+     Method: Stratified split (maintains class proportions)
+     Ratio: 80.0% train / 20.0% test
+     Random seed: 42
+
+   Dataset Sizes:
+     Total samples: 11,979,405
+     Features: 80
+     Training set: 9,583,524 samples
+     Test set: 2,395,881 samples
+
+   Stratification Verification:
+     Stratified: ✓ Yes
+     Max class distribution difference: 0.010%
+     ✓ VERIFIED: Train and test have same class proportions
+
+5. FEATURE SCALING
+   ======================================================================
+
+   Scaling Method: STANDARD
+     StandardScaler: Transforms features to mean=0, std=1
+     Formula: (x - mean) / std
+
+   Scaling Process:
+     1. Scaler fitted on TRAINING data ONLY
+     2. Training data transformed using learned parameters
+     3. Test data transformed using TRAINING parameters
+     ✓ Data leakage PREVENTED (test data never influenced scaler)
+
+   Features Scaled:
+     Number: 80
+     Training samples: 9,583,524
+     Test samples: 2,395,881
+
+6. CLASS IMBALANCE HANDLING (SMOTE)
+   ======================================================================
+
+   SMOTE Configuration:
+     Strategy: Moderate oversampling (3.0% of dataset)
+     k_neighbors: 5
+     Applied to: TRAINING data only (test remains imbalanced)
+     Reason: Simulates real-world deployment conditions
+
+   Class Distribution Changes:
+     Classes oversampled: 6
+
+     Before SMOTE:
+       Class 0:  8,502,430 ( 88.72%)
+       Class 1:    115,628 (  1.21%)
+       Class 2:     75,281 (  0.79%)
+       Class 3:    620,764 (  6.48%)
+       Class 4:    157,254 (  1.64%)
+       Class 5:    111,473 (  1.16%)
+       Class 6:        694 (  0.01%)
+
+     After SMOTE:
+       Class 0:  8,502,430 ( 81.77%)
+       Class 1:    255,072 (  2.45%) [+139,444, 2.2x]
+       Class 2:    255,072 (  2.45%) [+179,791, 3.4x]
+       Class 3:    620,764 (  5.97%)
+       Class 4:    255,072 (  2.45%) [+97,818, 1.6x]
+       Class 5:    255,072 (  2.45%) [+143,599, 2.3x]
+       Class 6:    255,072 (  2.45%) [+254,378, 367.5x]
+
+   SMOTE Summary:
+     Samples before: 9,583,524
+     Samples after: 10,398,554
+     Synthetic samples: 815,030
+     Increase: 8.50%
+
+7. FEATURE SELECTION (RFE)
+   ======================================================================
+
+   Status: DISABLED
+   Reason: ENABLE_RFE=False in config.py
+   To enable: Set ENABLE_RFE=True (adds 20-30 min runtime)
+
+================================================================================
+                         FINAL PREPROCESSED DATASET
+================================================================================
+
+Training Set:
+  Samples: 10,398,554 (after SMOTE)
+  Features: 80
+  Classes: 7
+
+Test Set:
+  Samples: 2,395,881 (original distribution)
+  Features: 80
+  Classes: 7
+
+================================================================================
+                      PREPROCESSING QUALITY ASSESSMENT
+================================================================================
+
+Data Cleaning:
+  ✓ NaN values removed (0.370%)
+  ✓ Inf values removed (0.220%)
+  ✓ Duplicates removed (25.610%)
+  ✓ Data loss: 26.200% (acceptable)
+
+Label Consolidation:
+  ✓ 15 classes → 7 classes
+  ✓ Consistent naming applied
+  ✓ No unmapped labels
+
+Encoding:
+  ✓ All categorical features converted to numerical
+  ✓ Protocol one-hot encoded (3 columns)
+  ✓ Target label encoded (7 classes)
+
+Train-Test Split:
+  ✓ 80:20 ratio achieved
+  ✓ Stratification verified (max diff 0.010%)
+  ✓ Reproducible (random_state=42)
+
+Feature Scaling:
+  ✓ StandardScaler applied
+  ✓ Fitted on training data only
+  ✓ No data leakage
+
+Class Imbalance:
+  ✓ SMOTE applied to training set
+  ✓ Moderate oversampling (3% of dataset)
+  ✓ Test set remains imbalanced (real-world simulation)
+
+Feature Selection:
+  ✗ RFE not applied (all features retained)
+
+================================================================================
+Overall Assessment: ✓✓✓ GOOD
+Data Quality: Ready for model training
+Expected Performance: >96% macro F1-score (target)
+================================================================================
+
+Report generated: 2026-01-24 18:48:09
+Module: Data Preprocessing (Module 3)
+Next step: Model Training (Module 4)

@@ -1,0 +1,292 @@
+================================================================================
+                    DATA EXPLORATION REPORT
+                         CICIDS2018 Dataset
+                    Generated: 2026-01-24 17:16:50
+================================================================================
+
+1. DATASET OVERVIEW
+   ----------------
+   Total Rows:          16,233,002
+   Total Columns:       80
+   Memory Usage:        11.66 GB
+
+   Data Types Distribution:
+     - float64: 76 columns (95.0%)
+     - object: 2 columns (2.5%)
+     - str: 2 columns (2.5%)
+
+   Numeric Columns:     76
+   Categorical Columns: 4
+
+2. CLASS DISTRIBUTION
+   ------------------
+   Total Classes: 16
+
+   Class Name                    Count         Percentage    Imbalance Ratio
+   -------------------------------------------------------------------------
+   Benign                       13,484,708       83.07%            1.00
+   DDOS attack-HOIC                686,012        4.23%           19.66
+   DDoS attacks-LOIC-HTTP          576,191        3.55%           23.40
+   DoS attacks-Hulk                461,912        2.85%           29.19
+   Bot                             286,191        1.76%           47.12
+   FTP-BruteForce                  193,360        1.19%           69.74
+   SSH-Bruteforce                  187,589        1.16%           71.88
+   Infilteration                   161,934        1.00%           83.27
+   DoS attacks-SlowHTTPTest        139,890        0.86%           96.40
+   DoS attacks-GoldenEye            41,508        0.26%          324.87
+   DoS attacks-Slowloris            10,990        0.07%         1227.00
+   DDOS attack-LOIC-UDP              1,730        0.01%         7794.63
+   Brute Force -Web                    611        0.00%        22069.90
+   Brute Force -XSS                    230        0.00%        58629.17
+   SQL Injection                        87        0.00%       154996.64
+   Label                                59        0.00%       228554.37
+
+   Imbalance Severity: EXTREME
+   Gini Coefficient: 0.305
+   Classes requiring SMOTE (<1%): 9
+
+3. DATA QUALITY ASSESSMENT
+   ------------------------
+
+   3.1 Missing Values (NaN)
+       Total NaN cells: 64,205
+       Percentage of dataset: 0.005%
+       Columns with NaN: 76/80 (95.0%)
+       Rows with NaN: 59,780 (0.37%)
+
+       NaN Distribution (rows by NaN count):
+         1 NaN(s): 59,721 rows (0.368%)
+         76 NaN(s): 59 rows (0.000%)
+
+   3.2 Infinite Values (Inf/-Inf)
+       Total Inf cells: 131,799
+       Columns with Inf: 2/76 numeric (2.5%)
+       Rows with Inf: 95,760 (0.59%)
+
+       Inf Distribution (rows by Inf count):
+         1 Inf(s): 59,721 rows (0.368%)
+         2 Inf(s): 36,039 rows (0.222%)
+
+   3.3 Duplicate Rows
+       Duplicate count: 433,253
+       Percentage: 2.669%
+
+   Total rows to be removed: ~588,793 (3.63%)
+   Expected clean dataset size: ~15,644,209 rows
+
+4. FEATURE CORRELATION ANALYSIS
+   ----------------------------
+   Total numeric features: 76
+   Top features analyzed (by variance): 30
+
+   Top 30 Most Variable Features:
+    1. Fwd IAT Min
+    2. Flow IAT Min
+    3. Flow IAT Max
+    4. Fwd IAT Max
+    5. Idle Max
+    6. Flow Duration
+    7. Fwd IAT Tot
+    8. Fwd IAT Std
+    9. Flow IAT Std
+   10. Idle Mean
+   11. Fwd IAT Mean
+   12. Flow IAT Mean
+   13. Idle Std
+   14. Idle Min
+   15. Bwd IAT Tot
+   16. Bwd IAT Max
+   17. Bwd IAT Mean
+   18. Bwd IAT Min
+   19. Bwd IAT Std
+   20. Active Max
+   21. Active Mean
+   22. Active Min
+   23. Active Std
+   24. TotLen Bwd Pkts
+   25. Subflow Bwd Byts
+   26. Fwd Pkts/s
+   27. Pkt Len Var
+   28. Bwd Pkts/s
+   29. Subflow Fwd Byts
+   30. TotLen Fwd Pkts
+
+   Correlation Matrix Values (Top 20 Features):
+   Range from -1 (perfect negative) to +1 (perfect positive)
+
+   Strongest Positive Correlations:
+    1. Subflow Fwd Byts               <-> TotLen Fwd Pkts                  1.000
+    2. TotLen Bwd Pkts                <-> Subflow Bwd Byts                 1.000
+    3. Fwd IAT Min                    <-> Flow IAT Min                     1.000
+    4. Flow IAT Max                   <-> Fwd IAT Max                      1.000
+    5. Flow Duration                  <-> Fwd IAT Tot                      1.000
+    6. Fwd IAT Std                    <-> Flow IAT Std                     1.000
+    7. Fwd IAT Mean                   <-> Flow IAT Mean                    1.000
+    8. Idle Max                       <-> Idle Std                         0.992
+    9. Idle Max                       <-> Idle Mean                        0.982
+   10. Idle Mean                      <-> Idle Std                         0.981
+
+   Strongest Negative Correlations:
+    1. Flow IAT Min                   <-> Flow IAT Std                    -0.958
+    2. Fwd IAT Min                    <-> Flow IAT Std                    -0.958
+    3. Flow IAT Min                   <-> Fwd IAT Std                     -0.958
+    4. Fwd IAT Min                    <-> Fwd IAT Std                     -0.958
+    5. Flow IAT Min                   <-> Idle Mean                       -0.937
+    6. Fwd IAT Min                    <-> Idle Mean                       -0.937
+    7. Flow IAT Min                   <-> Idle Max                        -0.928
+    8. Fwd IAT Min                    <-> Idle Max                        -0.928
+    9. Flow IAT Min                   <-> Idle Std                        -0.924
+   10. Fwd IAT Min                    <-> Idle Std                        -0.924
+
+   Highly Correlated Feature Pairs (|r| > 0.9):
+   ---------------------------------------------------------------------------
+   Fwd IAT Min                    <-> Flow IAT Min                   :  1.000
+   Fwd IAT Min                    <-> Idle Max                       : -0.928
+   Fwd IAT Min                    <-> Fwd IAT Std                    : -0.958
+   Fwd IAT Min                    <-> Flow IAT Std                   : -0.958
+   Fwd IAT Min                    <-> Idle Mean                      : -0.937
+   Fwd IAT Min                    <-> Idle Std                       : -0.924
+   Flow IAT Min                   <-> Idle Max                       : -0.928
+   Flow IAT Min                   <-> Fwd IAT Std                    : -0.958
+   Flow IAT Min                   <-> Flow IAT Std                   : -0.958
+   Flow IAT Min                   <-> Idle Mean                      : -0.937
+
+5. COLUMN-WISE DATA AVAILABILITY
+   ---------------------------------
+
+   Data Availability for All Columns:
+   ------------------------------------------------------------------------------------------
+   Column Name                                Non-Null %       Null % Data Type      
+   ------------------------------------------------------------------------------------------
+   Flow Byts/s                                    99.63%        0.37% float64        
+   Flow Duration                                 100.00%        0.00% float64        
+   Tot Fwd Pkts                                  100.00%        0.00% float64        
+   Tot Bwd Pkts                                  100.00%        0.00% float64        
+   TotLen Fwd Pkts                               100.00%        0.00% float64        
+   TotLen Bwd Pkts                               100.00%        0.00% float64        
+   Fwd Pkt Len Max                               100.00%        0.00% float64        
+   Fwd Pkt Len Min                               100.00%        0.00% float64        
+   Fwd Pkt Len Mean                              100.00%        0.00% float64        
+   Fwd Pkt Len Std                               100.00%        0.00% float64        
+   Bwd Pkt Len Max                               100.00%        0.00% float64        
+   Bwd Pkt Len Min                               100.00%        0.00% float64        
+   Bwd Pkt Len Mean                              100.00%        0.00% float64        
+   Bwd Pkt Len Std                               100.00%        0.00% float64        
+   Flow Pkts/s                                   100.00%        0.00% float64        
+   Flow IAT Mean                                 100.00%        0.00% float64        
+   Flow IAT Std                                  100.00%        0.00% float64        
+   Flow IAT Max                                  100.00%        0.00% float64        
+   Flow IAT Min                                  100.00%        0.00% float64        
+   Fwd IAT Tot                                   100.00%        0.00% float64        
+   Fwd IAT Mean                                  100.00%        0.00% float64        
+   Fwd IAT Std                                   100.00%        0.00% float64        
+   Fwd IAT Max                                   100.00%        0.00% float64        
+   Fwd IAT Min                                   100.00%        0.00% float64        
+   Bwd IAT Tot                                   100.00%        0.00% float64        
+   Bwd IAT Mean                                  100.00%        0.00% float64        
+   Bwd IAT Std                                   100.00%        0.00% float64        
+   Bwd IAT Max                                   100.00%        0.00% float64        
+   Bwd IAT Min                                   100.00%        0.00% float64        
+   Fwd PSH Flags                                 100.00%        0.00% float64        
+   Bwd PSH Flags                                 100.00%        0.00% float64        
+   Fwd URG Flags                                 100.00%        0.00% float64        
+   Bwd URG Flags                                 100.00%        0.00% float64        
+   Fwd Header Len                                100.00%        0.00% float64        
+   Bwd Header Len                                100.00%        0.00% float64        
+   Fwd Pkts/s                                    100.00%        0.00% float64        
+   Bwd Pkts/s                                    100.00%        0.00% float64        
+   Pkt Len Min                                   100.00%        0.00% float64        
+   Pkt Len Max                                   100.00%        0.00% float64        
+   Pkt Len Mean                                  100.00%        0.00% float64        
+   Pkt Len Std                                   100.00%        0.00% float64        
+   Pkt Len Var                                   100.00%        0.00% float64        
+   FIN Flag Cnt                                  100.00%        0.00% float64        
+   SYN Flag Cnt                                  100.00%        0.00% float64        
+   RST Flag Cnt                                  100.00%        0.00% float64        
+   PSH Flag Cnt                                  100.00%        0.00% float64        
+   ACK Flag Cnt                                  100.00%        0.00% float64        
+   URG Flag Cnt                                  100.00%        0.00% float64        
+   CWE Flag Count                                100.00%        0.00% float64        
+   ECE Flag Cnt                                  100.00%        0.00% float64        
+   Down/Up Ratio                                 100.00%        0.00% float64        
+   Pkt Size Avg                                  100.00%        0.00% float64        
+   Fwd Seg Size Avg                              100.00%        0.00% float64        
+   Bwd Seg Size Avg                              100.00%        0.00% float64        
+   Fwd Byts/b Avg                                100.00%        0.00% float64        
+   Fwd Pkts/b Avg                                100.00%        0.00% float64        
+   Fwd Blk Rate Avg                              100.00%        0.00% float64        
+   Bwd Byts/b Avg                                100.00%        0.00% float64        
+   Bwd Pkts/b Avg                                100.00%        0.00% float64        
+   Bwd Blk Rate Avg                              100.00%        0.00% float64        
+   Subflow Fwd Pkts                              100.00%        0.00% float64        
+   Subflow Fwd Byts                              100.00%        0.00% float64        
+   Subflow Bwd Pkts                              100.00%        0.00% float64        
+   Subflow Bwd Byts                              100.00%        0.00% float64        
+   Init Fwd Win Byts                             100.00%        0.00% float64        
+   Init Bwd Win Byts                             100.00%        0.00% float64        
+   Fwd Act Data Pkts                             100.00%        0.00% float64        
+   Fwd Seg Size Min                              100.00%        0.00% float64        
+   Active Mean                                   100.00%        0.00% float64        
+   Active Std                                    100.00%        0.00% float64        
+   Active Max                                    100.00%        0.00% float64        
+   Active Min                                    100.00%        0.00% float64        
+   Idle Mean                                     100.00%        0.00% float64        
+   Idle Std                                      100.00%        0.00% float64        
+   Idle Max                                      100.00%        0.00% float64        
+   Idle Min                                      100.00%        0.00% float64        
+   Dst Port                                      100.00%        0.00% object         
+   Protocol                                      100.00%        0.00% object         
+   Timestamp                                     100.00%        0.00% str            
+   Label                                         100.00%        0.00% str            
+
+   ✓ All columns have <10% missing data - good quality dataset
+
+6. MEMORY USAGE ANALYSIS
+   --------------------
+   Total Memory: 11.66 GB
+   Memory per row: 0.75 KB
+
+   Memory by Data Type:
+     float64: 9.19 GB (78.9%)
+     object: 1.82 GB (15.6%)
+     str: 0.65 GB (5.5%)
+
+7. PREPROCESSING RECOMMENDATIONS
+   ---------------------------------
+
+   Based on exploration findings and CICIDS2018 specification:
+
+   1. Data Cleaning:
+      ✓ REMOVE rows with NaN: 59,780 rows (0.37%)
+      ✓ REMOVE rows with Inf: 95,760 rows (0.59%)
+      ✓ REMOVE duplicate rows: 433,253 rows (2.669%)
+      Expected loss: ~588,793 rows (3.63%) - ACCEPTABLE
+      Expected clean dataset: ~15,644,209 rows
+
+   2. Label Consolidation:
+      ✓ Merge DDoS subcategories → "DDoS"
+      ✓ Merge DoS subcategories → "DoS"
+      ✓ Merge Brute Force variants → "Brute Force"
+      Result: 15 classes → 8 classes
+
+   3. Feature Scaling:
+      ✓ Use StandardScaler (mean=0, std=1)
+      Reason: Features have vastly different scales
+
+   4. Class Imbalance Handling:
+      ✓ Apply SMOTE to minority classes (<1%)
+      Target: Bring minorities to ~1-2% of dataset
+
+   5. Feature Selection:
+      ✓ Use Recursive Feature Elimination (RFE)
+      ✓ Target: 30-40 features (optimize macro F1-score)
+
+================================================================================
+                         END OF EXPLORATION REPORT
+================================================================================
+
+Report generated by: NIDS CICIDS2018 Project
+Module: Data Exploration (Module 2)
+Timestamp: 2026-01-24 17:16:50
+Next step: Data Preprocessing (Module 3)
+================================================================================
