@@ -1,0 +1,246 @@
+(venv) paudeladrin@instance-20260123-213323:~/Nids$ python main.py --module 3
+[2026-01-26 10:52:45] [SUCCESS] [SETUP] All directories created/verified
+
+[2026-01-26 10:52:45] [INFO] Module 3 requires Module 1 data. Loading...
+[2026-01-26 10:52:45] [INFO] ✓ Module 1 checkpoint found. Loading from checkpoint...
+[2026-01-26 10:52:51] [SUCCESS] ✓ Loaded Module 1 checkpoint (skipping data loading)
+
+[2026-01-26 10:52:51] [INFO] Starting Module 3: Data Preprocessing
+
+================================================================================
+  MODULE 3: DATA PREPROCESSING
+================================================================================
+
+[2026-01-26 10:52:51] [INFO] Starting fresh preprocessing pipeline
+
+[2026-01-26 10:52:51] [STEP] Starting data cleaning...
+[2026-01-26 10:52:58] [INFO] Initial dataset: 16,232,943 rows × 80 columns
+[2026-01-26 10:52:58] [INFO] Initial memory: 11.01 GB
+
+[2026-01-26 10:52:58] [SUBSTEP] Removing useless columns...
+[2026-01-26 10:52:58] [INFO] Dropped 1 useless columns: Timestamp
+
+[2026-01-26 10:52:58] [SUBSTEP] Removing invalid 'Label' class rows...
+[2026-01-26 10:52:58] [INFO] No 'Label' class rows found
+
+[2026-01-26 10:52:58] [SUBSTEP] Removing rows with NaN values...
+[2026-01-26 10:53:04] [INFO] Found 59,721 rows with NaN (0.37%)
+[2026-01-26 10:53:04] [INFO] Affected columns: Flow Byts/s
+[2026-01-26 10:53:16] [SUCCESS] Removed 59,721 rows with NaN
+[2026-01-26 10:53:16] [INFO] Remaining: 16,173,222 rows
+
+[2026-01-26 10:53:16] [SUBSTEP] Removing rows with Inf values...
+[2026-01-26 10:53:21] [INFO] Found 36,039 rows with Inf (0.22%)
+[2026-01-26 10:53:21] [INFO] Affected columns: Flow Byts/s, Flow Pkts/s
+[2026-01-26 10:53:42] [SUCCESS] Removed 36,039 rows with Inf
+[2026-01-26 10:53:42] [INFO] Remaining: 16,137,183 rows
+
+[2026-01-26 10:53:42] [SUBSTEP] Removing duplicate rows...
+[2026-01-26 10:55:51] [INFO] Found 4,157,778 duplicate rows (25.77%)
+[2026-01-26 10:58:03] [SUCCESS] Removed 4,157,778 duplicate rows
+[2026-01-26 10:58:03] [INFO] Remaining: 11,979,405 rows
+
+[2026-01-26 10:58:07] [INFO] ================================================================================
+[2026-01-26 10:58:07] [SUCCESS]                             DATA CLEANING SUMMARY
+[2026-01-26 10:58:07] [INFO] ================================================================================
+[2026-01-26 10:58:07] [INFO] Initial rows:       16,232,943
+[2026-01-26 10:58:07] [INFO] Useless columns:    1 dropped
+[2026-01-26 10:58:07] [INFO] Invalid 'Label':    0 rows removed
+[2026-01-26 10:58:07] [INFO] Rows with NaN:      59,721 (0.37%)
+[2026-01-26 10:58:07] [INFO] Rows with Inf:      36,039 (0.22%)
+[2026-01-26 10:58:07] [INFO] Duplicate rows:     4,157,778 (25.61%)
+[2026-01-26 10:58:07] [INFO] --------------------------------------------------------------------------------
+[2026-01-26 10:58:07] [WARNING] Total removed:      4,253,538 (26.20%)
+[2026-01-26 10:58:07] [SUCCESS] Final rows:         11,979,405
+[2026-01-26 10:58:07] [INFO] Final columns:      79
+[2026-01-26 10:58:07] [INFO] ================================================================================
+[2026-01-26 10:58:07] [INFO] Memory before:      11.01 GB
+[2026-01-26 10:58:07] [INFO] Memory after:       7.91 GB
+[2026-01-26 10:58:07] [SUCCESS] Memory saved:       3.10 GB
+[2026-01-26 10:58:07] [INFO] ================================================================================
+[2026-01-26 10:58:07] [WARNING] ⚠️  WARNING: Data loss (26.20%) exceeds 5% threshold!
+[2026-01-26 10:58:07] [WARNING] Continuing anyway as per configuration...
+
+[2026-01-26 10:58:07] [SUBSTEP] [SUBSTEP] Converting 'Dst Port' to numeric...
+[2026-01-26 10:58:12] [SUCCESS] ✓ Dst Port converted to numeric
+
+[2026-01-26 10:58:12] [SUBSTEP] [SUBSTEP] Standardizing 'Protocol' column type...
+[2026-01-26 10:58:15] [SUCCESS] ✓ Protocol standardized as string type
+
+[2026-01-26 10:58:54] [SUCCESS] ✓ Checkpoint 1 saved: cleaned_data.parquet
+
+[2026-01-26 10:58:54] [STEP] Consolidating attack labels...
+[2026-01-26 10:58:54] [INFO] Original classes: 15
+
+[2026-01-26 10:58:56] [INFO] Removing 84 rows marked as '__DROP__' (e.g., SQL Injection)
+[2026-01-26 10:59:04] [SUCCESS] ✓ Removed 84 rows
+[2026-01-26 10:59:04] [INFO] Remaining: 11,979,321 rows
+
+[2026-01-26 10:59:04] [SUCCESS] Consolidated classes: 6
+[2026-01-26 10:59:04] [INFO] Reduction: 15 → 6 classes
+
+[2026-01-26 10:59:04] [INFO] Class distribution after consolidation:
+[2026-01-26 10:59:04] [INFO]   Benign              :   10,628,038 ( 88.72%)
+[2026-01-26 10:59:04] [INFO]   Botnet              :      144,535 (  1.21%)
+[2026-01-26 10:59:04] [INFO]   Brute Force         :       94,884 (  0.79%)
+[2026-01-26 10:59:04] [INFO]   DDoS                :      775,955 (  6.48%)
+[2026-01-26 10:59:04] [INFO]   DoS                 :      196,568 (  1.64%)
+[2026-01-26 10:59:04] [INFO]   Infilteration       :      139,341 (  1.16%)
+
+[2026-01-26 10:59:04] [STEP] Encoding categorical features...
+[2026-01-26 10:59:04] [SUBSTEP] One-hot encoding 'Protocol' column...
+[2026-01-26 10:59:04] [INFO] Found 3 unique protocols: ['0', '17', '6']
+[2026-01-26 10:59:05] [SUCCESS] Created 3 one-hot columns: Protocol_0, Protocol_17, Protocol_6
+
+[2026-01-26 10:59:05] [SUBSTEP] Label encoding target column 'Label'...
+[2026-01-26 10:59:08] [INFO] Encoded 6 classes:
+[2026-01-26 10:59:08] [INFO]   0: Benign
+[2026-01-26 10:59:08] [INFO]   1: Botnet
+[2026-01-26 10:59:08] [INFO]   2: Brute Force
+[2026-01-26 10:59:08] [INFO]   3: DDoS
+[2026-01-26 10:59:08] [INFO]   4: DoS
+[2026-01-26 10:59:08] [INFO]   5: Infilteration
+
+[2026-01-26 10:59:08] [SUCCESS] Encoding complete: 79 → 81 columns (+2)
+
+[2026-01-26 10:59:08] [STEP] Splitting into train and test sets...
+[2026-01-26 10:59:08] [INFO] Features shape: (11979321, 80)
+[2026-01-26 10:59:08] [INFO] Labels shape: (11979321,)
+
+[2026-01-26 10:59:08] [INFO] Class distribution before split:
+[2026-01-26 10:59:08] [INFO]   Class 0: 10,628,038 ( 88.72%)
+[2026-01-26 10:59:08] [INFO]   Class 1:    144,535 (  1.21%)
+[2026-01-26 10:59:08] [INFO]   Class 2:     94,884 (  0.79%)
+[2026-01-26 10:59:08] [INFO]   Class 3:    775,955 (  6.48%)
+[2026-01-26 10:59:08] [INFO]   Class 4:    196,568 (  1.64%)
+[2026-01-26 10:59:08] [INFO]   Class 5:    139,341 (  1.16%)
+
+[2026-01-26 10:59:29] [SUCCESS] Train set: 9,583,456 samples (80%)
+[2026-01-26 10:59:29] [SUCCESS] Test set:  2,395,865 samples (20%)
+
+[2026-01-26 10:59:29] [SUBSTEP] Verifying stratification:
+[2026-01-26 10:59:29] [SUCCESS] Max distribution difference: 0.000%
+[2026-01-26 10:59:29] [SUCCESS] ✓ Stratification verified - train and test have same class proportions
+
+[2026-01-26 11:00:17] [SUCCESS] ✓ Checkpoint 2 saved: train_encoded.parquet, test_encoded.parquet
+
+[2026-01-26 11:00:17] [STEP] Scaling features...
+[2026-01-26 11:00:17] [INFO] Using StandardScaler (mean=0, std=1)
+
+[2026-01-26 11:00:17] [SUBSTEP] Fitting scaler on TRAINING data only...
+[2026-01-26 11:00:28] [SUCCESS] ✓ Scaler fitted (no data leakage)
+
+[2026-01-26 11:00:28] [SUBSTEP] Transforming training data...
+[2026-01-26 11:01:25] [SUCCESS] Training data scaled: (9583456, 80)
+
+[2026-01-26 11:01:25] [SUBSTEP] Transforming test data using TRAINING statistics...
+[2026-01-26 11:01:37] [SUCCESS] Test data scaled: (2395865, 80)
+[2026-01-26 11:01:37] [SUCCESS] ✓ No data leakage - test data did not influence scaler
+
+[2026-01-26 11:01:47] [INFO] Verification (training set should have mean≈0, std≈1):
+[2026-01-26 11:01:47] [INFO]   Mean range: [-0.000000, 0.000000]
+[2026-01-26 11:01:47] [INFO]   Std range:  [0.000000, 1.000000]
+
+[2026-01-26 11:01:47] [SUCCESS] ✓ Scaler saved: scaler.joblib
+[2026-01-26 11:01:47] [SUCCESS] ✓ Label encoder saved: label_encoder.joblib
+
+[2026-01-26 11:01:47] [STEP] Applying SMOTE to balance classes...
+[2026-01-26 11:01:47] [WARNING] ⚠️  SMOTE applied ONLY to training data (test remains imbalanced)
+
+[2026-01-26 11:01:47] [INFO] Class distribution BEFORE SMOTE:
+[2026-01-26 11:01:47] [INFO]   Class 0:  8,502,430 ( 88.72%)
+[2026-01-26 11:01:47] [INFO]   Class 1:    115,628 (  1.21%)
+[2026-01-26 11:01:47] [INFO]   Class 2:     75,907 (  0.79%)
+[2026-01-26 11:01:47] [INFO]   Class 3:    620,764 (  6.48%)
+[2026-01-26 11:01:47] [INFO]   Class 4:    157,254 (  1.64%)
+[2026-01-26 11:01:47] [INFO]   Class 5:    111,473 (  1.16%)
+
+[2026-01-26 11:01:47] [INFO] Using TIERED sampling strategy
+[2026-01-26 11:01:47] [INFO]   Class 1: 115,628 → 143,751 (target: 1.5%)
+[2026-01-26 11:01:47] [INFO]   Class 2: 75,907 → 191,669 (target: 2.0%)
+[2026-01-26 11:01:47] [INFO]   Class 5: 111,473 → 143,751 (target: 1.5%)
+[2026-01-26 11:01:47] [INFO] Classes to oversample: 3
+
+[2026-01-26 11:01:47] [SUBSTEP] Running SMOTE (this may take 15-20 minutes)...
+[2026-01-26 11:02:50] [SUCCESS] Class distribution AFTER SMOTE:
+[2026-01-26 11:02:50] [INFO]   Class 0:  8,502,430 ( 87.12%) [+0]
+[2026-01-26 11:02:50] [INFO]   Class 1:    143,751 (  1.47%) [+28,123]
+[2026-01-26 11:02:50] [INFO]   Class 2:    191,669 (  1.96%) [+115,762]
+[2026-01-26 11:02:50] [INFO]   Class 3:    620,764 (  6.36%) [+0]
+[2026-01-26 11:02:50] [INFO]   Class 4:    157,254 (  1.61%) [+0]
+[2026-01-26 11:02:50] [INFO]   Class 5:    143,751 (  1.47%) [+32,278]
+
+[2026-01-26 11:02:50] [SUCCESS] Training samples: 9,583,456 → 9,759,619
+[2026-01-26 11:02:50] [INFO] Increase: 176,163 synthetic samples
+
+[2026-01-26 11:03:39] [SUCCESS] ✓ Checkpoint 3 saved: train_scaled_smoted.parquet, test_scaled.parquet
+
+[2026-01-26 11:03:39] [STEP] Performing RF Feature Importance Selection (Paper 1 Method)...
+[2026-01-26 11:03:39] [INFO] ⏱️  Expected time: ~8-12 minutes
+
+[2026-01-26 11:03:39] [INFO] Initial features: 80
+[2026-01-26 11:03:39] [INFO] Target range: 40-45 features
+
+[2026-01-26 11:03:39] [WARNING] Dataset is large (9,759,619 samples)
+[2026-01-26 11:03:39] [INFO] Using stratified subset of 2,000,000 samples for speed
+[2026-01-26 11:03:55] [SUCCESS] ✓ Subset created: 2,000,000 samples
+[2026-01-26 11:03:55] [SUBSTEP] Training Random Forest for feature importance...
+[2026-01-26 11:03:55] [INFO] RF config: 100 trees, depth=15, n_jobs=16
+[Parallel(n_jobs=16)]: Using backend ThreadingBackend with 16 concurrent workers.
+[Parallel(n_jobs=16)]: Done  18 tasks      | elapsed:   27.9s
+[Parallel(n_jobs=16)]: Done 100 out of 100 | elapsed:  1.5min finished
+[2026-01-26 11:05:25] [SUCCESS] ✓ RF training complete in 1.50 minutes
+
+[2026-01-26 11:05:25] [SUBSTEP] Extracting feature importances...
+[2026-01-26 11:05:25] [INFO] Top 10 Most Important Features:
+[2026-01-26 11:05:25] [INFO]   Dst Port                                 0.064285
+[2026-01-26 11:05:25] [INFO]   Fwd Header Len                           0.046421
+[2026-01-26 11:05:25] [INFO]   Fwd Seg Size Min                         0.046350
+[2026-01-26 11:05:25] [INFO]   Init Fwd Win Byts                        0.034728
+[2026-01-26 11:05:25] [INFO]   Bwd Seg Size Avg                         0.031460
+[2026-01-26 11:05:25] [INFO]   Pkt Len Max                              0.029378
+[2026-01-26 11:05:25] [INFO]   TotLen Fwd Pkts                          0.028897
+[2026-01-26 11:05:25] [INFO]   Subflow Bwd Byts                         0.028375
+[2026-01-26 11:05:25] [INFO]   Bwd Pkt Len Std                          0.027896
+[2026-01-26 11:05:25] [INFO]   Tot Fwd Pkts                             0.026640
+
+[2026-01-26 11:05:25] [INFO] 51 features above threshold - limiting to top 45
+[2026-01-26 11:05:25] [INFO] Feature Selection Summary:
+[2026-01-26 11:05:25] [INFO]   Original features: 80
+[2026-01-26 11:05:25] [INFO]   Selected features: 45
+[2026-01-26 11:05:25] [INFO]   Reduction: 43.8%
+
+[2026-01-26 11:05:25] [SUCCESS] ✓ Feature importances saved to /home/paudeladrin/Nids/data/preprocessed/feature_importances.csv
+
+[2026-01-26 11:05:26] [SUCCESS] ✓ Feature selection complete in 1.53 minutes
+
+[2026-01-26 11:05:59] [SUCCESS] ✓ Checkpoint 4 saved: train_final.parquet, test_final.parquet
+[2026-01-26 11:05:59] [SUCCESS] ✓ RF importance model saved: rf_importance_model.joblib
+
+[2026-01-26 11:05:59] [SUCCESS] ✓ Label encoder saved: label_encoder.joblib
+
+[2026-01-26 11:05:59] [STEP] Generating preprocessing visualizations...
+[2026-01-26 11:05:59] [STEP] Generating preprocessing visualizations...
+
+[2026-01-26 11:05:59] [SUCCESS] Saved figure: cleaning_summary.png
+[2026-01-26 11:06:00] [SUCCESS] Saved figure: class_distribution_before_smote_log.png
+[2026-01-26 11:06:01] [SUCCESS] Saved figure: class_distribution_before_smote_linear.png
+[2026-01-26 11:06:01] [SUCCESS] Saved figure: class_distribution_after_smote_log.png
+[2026-01-26 11:06:02] [SUCCESS] Saved figure: class_distribution_after_smote_linear.png
+[2026-01-26 11:06:03] [SUCCESS] Saved figure: smote_comparison_linear.png
+
+
+[2026-01-26 11:06:03] [STEP] Generating preprocessing reports...
+[2026-01-26 11:06:03] [SUCCESS] Saved report: preprocessing_results.txt
+[2026-01-26 11:06:03] [SUCCESS] ✓ Saved detailed report: preprocessing_results.txt
+[2026-01-26 11:06:03] [SUCCESS] Saved report: preprocessing_steps.txt
+[2026-01-26 11:06:03] [SUCCESS] ✓ Saved detailed step-by-step log: preprocessing_steps.txt
+
+[2026-01-26 11:06:03] [SUCCESS] Module 3 completed successfully!
+[2026-01-26 11:06:03] [SUCCESS] All preprocessed data saved to: /home/paudeladrin/Nids/data/preprocessed
+[2026-01-26 11:06:03] [SUCCESS] All reports saved to: /home/paudeladrin/Nids/reports/preprocessing
+
+
+[2026-01-26 11:06:03] [SUCCESS] Requested modules completed!
+
+(venv) paudeladrin@instance-20260123-213323:~/Nids$ 

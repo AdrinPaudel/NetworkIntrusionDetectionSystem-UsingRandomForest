@@ -1,101 +1,97 @@
 ================================================================================
               MODEL TESTING & EVALUATION REPORT
                     CICIDS2018 Dataset
-              Generated: 2026-01-25 21:26:45
+              Generated: 2026-01-27 00:20:58
 ================================================================================
 
 1. TESTING OVERVIEW
 --------------------------------------------------------------------------------
-Model: RandomForestClassifier (100 trees)
+Model: RandomForestClassifier (150 trees)
 Features: 45
-Classes: 7
-Class Names: Benign, Botnet, Brute Force, DDoS, DoS, Infiltration, Web Attack
+Classes: 6
+Class Names: Benign, Botnet, Brute Force, DDoS, DoS, Infilteration
 
 2. INFERENCE PERFORMANCE
 --------------------------------------------------------------------------------
-Inference speed: 551,022 samples/second
-Inference time: 4.35 seconds
-Mean confidence: 0.9838
-Low confidence predictions: 1,357
+Inference speed: 493,284 samples/second
+Inference time: 4.86 seconds
+Mean confidence: 0.9848
+Low confidence predictions: 63
 
 3. MULTICLASS EVALUATION
 --------------------------------------------------------------------------------
-Accuracy:           0.9874 (98.74%)
-Macro Precision:    0.7930
-Macro Recall:       0.8665
-Macro F1-Score:     0.7674
-Weighted F1-Score:  0.9842
-Macro AUC:          0.9847
+Accuracy:           0.9882 (98.82%)
+Macro Precision:    0.9134
+Macro Recall:       0.8532
+Macro F1-Score:     0.8657
+Weighted F1-Score:  0.9848
+Macro AUC:          0.9818
 
 Per-Class Performance:
 Class                Precision  Recall     F1-Score   AUC        Support
 --------------------------------------------------------------------------------
-Benign               0.9885     0.9975     0.9930     0.9882     2,125,608
-Botnet               1.0000     0.9960     0.9980     1.0000     28,907
-Brute Force          0.9996     0.9995     0.9995     1.0000     18,820
-DDoS                 0.9984     0.9985     0.9984     1.0000     155,191
-DoS                  0.9998     0.9998     0.9998     1.0000     39,314
-Infiltration         0.4584     0.1207     0.1911     0.9050     27,868
-Web Attack           0.1067     0.9538     0.1919     0.9997     173
+Benign               0.9886     0.9982     0.9934     0.9885     2,125,608
+Botnet               1.0000     0.9961     0.9980     1.0000     28,907
+Brute Force          0.9994     0.9957     0.9975     1.0000     18,977
+DDoS                 0.9995     0.9993     0.9994     1.0000     155,191
+DoS                  0.9998     0.9994     0.9996     1.0000     39,314
+Infilteration        0.4930     0.1303     0.2061     0.9025     27,868
 
 4. BINARY EVALUATION (Benign vs Attack)
 --------------------------------------------------------------------------------
-Accuracy:           0.9875 (98.75%)
-Precision:          0.9785
-Recall (TPR):       0.9088
-F1-Score:           0.9423
-Specificity (TNR):  0.9975
-Binary AUC:         0.9882
-False Positive Rate: 0.0025 (0.25%)
-False Negative Rate: 0.0912 (9.12%)
+Accuracy:           0.9882 (98.82%)
+Precision:          0.9847
+Recall (TPR):       0.9092
+F1-Score:           0.9455
+Specificity (TNR):  0.9982
+Binary AUC:         0.9885
+False Positive Rate: 0.0018 (0.18%)
+False Negative Rate: 0.0908 (9.08%)
 
 Confusion Matrix:
-  True Negatives:  2,120,204
-  False Positives: 5,404
-  False Negatives: 24,659
-  True Positives:  245,614
+  True Negatives:  2,121,792
+  False Positives: 3,816
+  False Negatives: 24,538
+  True Positives:  245,719
 
 5. ERROR ANALYSIS
 --------------------------------------------------------------------------------
-Total Errors: 30,283 (1.26%)
-False Negatives: 24,659 (attacks missed)
-False Positives: 5,404 (false alarms)
+Total Errors: 28,375 (1.18%)
+False Negatives: 24,538 (attacks missed)
+False Positives: 3,816 (false alarms)
 
 Top 10 Confusion Pairs:
 Rank   Confusion Pair                           Count      % of Errors
 --------------------------------------------------------------------------------
-1      Infiltration → Benign                    24,500     80.90%
-2      Benign → Infiltration                    3,974      13.12%
-3      Benign → Web Attack                      1,180      3.90%
-4      Benign → DDoS                            249        0.82%
-5      DDoS → Web Attack                        197        0.65%
-6      Botnet → Benign                          116        0.38%
-7      DDoS → Benign                            34         0.11%
-8      Brute Force → DoS                        8          0.03%
-9      DoS → Brute Force                        8          0.03%
-10     Web Attack → Benign                      6          0.02%
+1      Infilteration → Benign                   24,238     85.42%
+2      Benign → Infilteration                   3,733      13.16%
+3      Botnet → Benign                          114        0.40%
+4      DDoS → Benign                            103        0.36%
+5      Benign → DDoS                            83         0.29%
+6      Brute Force → Benign                     72         0.25%
+7      DoS → Brute Force                        11         0.04%
+8      DoS → Benign                             11         0.04%
+9      Brute Force → DoS                        8          0.03%
+10     Brute Force → DDoS                       2          0.01%
 
 False Negatives by Attack Type:
-  Botnet              : 116
-  Brute Force         : 2
-  DDoS                : 34
-  DoS                 : 1
-  Infiltration        : 24,500
-  Web Attack          : 6
+  Botnet              : 114
+  Brute Force         : 72
+  DDoS                : 103
+  DoS                 : 11
+  Infilteration       : 24,238
 
 False Positives by Attack Type:
-  DDoS                : 249
-  DoS                 : 1
-  Infiltration        : 3,974
-  Web Attack          : 1,180
+  DDoS                : 83
+  Infilteration       : 3,733
 
 6. CONCLUSION
 --------------------------------------------------------------------------------
-✓ Macro F1-Score: 0.7674 (Target: >0.96)
-✓ Accuracy: 0.9874
-✓ Binary F1-Score: 0.9423
-✓ Low False Positive Rate: 0.0025
-✓ Low False Negative Rate: 0.0912
+✓ Macro F1-Score: 0.8657 (Target: >0.96)
+✓ Accuracy: 0.9882
+✓ Binary F1-Score: 0.9455
+✓ Low False Positive Rate: 0.0018
+✓ Low False Negative Rate: 0.0908
 
 Model Status: PRODUCTION READY
 ================================================================================

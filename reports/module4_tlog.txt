@@ -1,0 +1,222 @@
+paudeladrin@instance-20260123-213323:~/Nids$ python3 main.py --module 4
+[2026-01-26 23:44:56] [SUCCESS] [SETUP] All directories created/verified
+
+[2026-01-26 23:44:56] [INFO] Starting Module 4: Model Training
+[2026-01-26 23:44:56] [STEP] 
+================================================================================
+[2026-01-26 23:44:56] [STEP] MODULE 4: MODEL TRAINING
+[2026-01-26 23:44:56] [STEP] ================================================================================
+[2026-01-26 23:44:56] [STEP] Loading preprocessed data...
+[2026-01-26 23:44:56] [SUBSTEP] Loading training data (after SMOTE)...
+[2026-01-26 23:44:57] [INFO] Training data: 9,759,619 samples, 45 features
+[2026-01-26 23:44:57] [SUBSTEP] Loading test data (original distribution)...
+[2026-01-26 23:44:58] [INFO] Test data: 2,395,865 samples, 45 features
+[2026-01-26 23:44:58] [SUBSTEP] Loading scaler and label encoder...
+[2026-01-26 23:44:58] [INFO] Label classes: ['Benign', 'Botnet', 'Brute Force', 'DDoS', 'DoS', 'Infilteration']
+[2026-01-26 23:44:58] [SUCCESS] Data loading completed in 1.3 seconds
+[2026-01-26 23:44:58] [STEP] ================================================================================
+[2026-01-26 23:44:58] [STEP] HYPERPARAMETER TUNING WITH RANDOMIZEDSEARCHCV
+[2026-01-26 23:44:58] [STEP] ================================================================================
+[2026-01-26 23:44:58] [SUBSTEP] Sampling 20% of training data for tuning to reduce memory...
+[2026-01-26 23:45:08] [INFO] Tuning subset: 1,951,923 samples × 45 features
+[2026-01-26 23:45:08] [INFO] Hyperparameter search space defined:
+[2026-01-26 23:45:08] [INFO]   n_estimators: 2 options
+[2026-01-26 23:45:08] [INFO]   max_depth: 3 options
+[2026-01-26 23:45:08] [INFO]   min_samples_split: 3 options
+[2026-01-26 23:45:08] [INFO]   min_samples_leaf: 3 options
+[2026-01-26 23:45:08] [INFO]   max_features: 2 options
+[2026-01-26 23:45:08] [INFO]   bootstrap: 1 options
+[2026-01-26 23:45:08] [INFO]   class_weight: 2 options
+[2026-01-26 23:45:08] [INFO]   Total combinations: 216
+[2026-01-26 23:45:08] [SUBSTEP] 
+Initializing Random Forest base estimator...
+[2026-01-26 23:45:08] [SUBSTEP] RF threads per fit: 1; max_samples=0.5
+[2026-01-26 23:45:08] [SUBSTEP] Setting up macro F1-score as optimization metric...
+[2026-01-26 23:45:08] [SUBSTEP] 
+Configuring RandomizedSearchCV:
+[2026-01-26 23:45:08] [INFO]   Iterations: 15
+[2026-01-26 23:45:08] [INFO]   Cross-validation folds: 3
+[2026-01-26 23:45:08] [INFO]   Scoring: macro F1-score + garbage collection after each fold
+[2026-01-26 23:45:08] [INFO]   Parallel CV jobs: auto (-1) with threading backend; pre_dispatch='n_jobs'
+[2026-01-26 23:45:08] [INFO]   RF threads per fit: 1
+[2026-01-26 23:45:08] [INFO]   Total model fits: 45
+[2026-01-26 23:45:08] [INFO]   Strategy: Threaded CV (shared memory) + per-fold gc; tuning subset optional
+[2026-01-26 23:45:08] [STEP] 
+Starting RandomizedSearchCV...
+[2026-01-26 23:45:08] [INFO] Training dataset (shared across threads): 1,951,923 samples × 45 features
+[2026-01-26 23:45:08] [INFO] Expected time: depends on VM cores (-1 jobs uses all)
+[2026-01-26 23:45:08] [INFO] Memory strategy: threaded CV shares data + gc per fold; pre_dispatch='n_jobs'
+[2026-01-26 23:45:08] [INFO] 
+Fitting 3 folds for each of 15 candidates, totalling 45 fits
+[CV] END bootstrap=True, class_weight=None, max_depth=20, max_features=log2, min_samples_leaf=4, min_samples_split=2, n_estimators=100; total time= 8.1min
+[CV] END bootstrap=True, class_weight=None, max_depth=20, max_features=log2, min_samples_leaf=4, min_samples_split=2, n_estimators=100; total time= 8.4min
+[CV] END bootstrap=True, class_weight=None, max_depth=20, max_features=log2, min_samples_leaf=4, min_samples_split=2, n_estimators=100; total time= 8.4min
+[CV] END bootstrap=True, class_weight=balanced_subsample, max_depth=20, max_features=log2, min_samples_leaf=4, min_samples_split=2, n_estimators=100; total time= 8.7min
+[CV] END bootstrap=True, class_weight=balanced_subsample, max_depth=20, max_features=log2, min_samples_leaf=4, min_samples_split=2, n_estimators=100; total time= 9.1min
+[CV] END bootstrap=True, class_weight=balanced_subsample, max_depth=20, max_features=log2, min_samples_leaf=4, min_samples_split=2, n_estimators=100; total time= 9.2min
+[CV] END bootstrap=True, class_weight=None, max_depth=30, max_features=sqrt, min_samples_leaf=1, min_samples_split=5, n_estimators=100; total time=10.4min
+[CV] END bootstrap=True, class_weight=None, max_depth=30, max_features=sqrt, min_samples_leaf=2, min_samples_split=10, n_estimators=100; total time=10.4min
+[CV] END bootstrap=True, class_weight=None, max_depth=30, max_features=sqrt, min_samples_leaf=1, min_samples_split=5, n_estimators=100; total time=10.6min
+[CV] END bootstrap=True, class_weight=None, max_depth=30, max_features=sqrt, min_samples_leaf=1, min_samples_split=5, n_estimators=100; total time=10.8min
+[CV] END bootstrap=True, class_weight=None, max_depth=30, max_features=sqrt, min_samples_leaf=2, min_samples_split=10, n_estimators=100; total time=10.8min
+[CV] END bootstrap=True, class_weight=None, max_depth=30, max_features=sqrt, min_samples_leaf=2, min_samples_split=10, n_estimators=100; total time=10.9min
+[CV] END bootstrap=True, class_weight=None, max_depth=20, max_features=log2, min_samples_leaf=4, min_samples_split=2, n_estimators=150; total time=11.9min
+[CV] END bootstrap=True, class_weight=None, max_depth=20, max_features=log2, min_samples_leaf=4, min_samples_split=2, n_estimators=150; total time=12.1min
+[CV] END bootstrap=True, class_weight=None, max_depth=20, max_features=log2, min_samples_leaf=4, min_samples_split=2, n_estimators=150; total time=12.2min
+[CV] END bootstrap=True, class_weight=None, max_depth=25, max_features=log2, min_samples_leaf=4, min_samples_split=5, n_estimators=150; total time=12.3min
+[CV] END bootstrap=True, class_weight=balanced_subsample, max_depth=25, max_features=log2, min_samples_leaf=4, min_samples_split=2, n_estimators=150; total time=12.4min
+[CV] END bootstrap=True, class_weight=None, max_depth=25, max_features=log2, min_samples_leaf=4, min_samples_split=5, n_estimators=150; total time=12.6min
+[CV] END bootstrap=True, class_weight=None, max_depth=30, max_features=log2, min_samples_leaf=2, min_samples_split=2, n_estimators=150; total time=12.6min
+[CV] END bootstrap=True, class_weight=None, max_depth=30, max_features=log2, min_samples_leaf=2, min_samples_split=2, n_estimators=150; total time=12.7min
+[CV] END bootstrap=True, class_weight=None, max_depth=30, max_features=log2, min_samples_leaf=4, min_samples_split=5, n_estimators=150; total time=12.7min
+[CV] END bootstrap=True, class_weight=None, max_depth=30, max_features=log2, min_samples_leaf=1, min_samples_split=5, n_estimators=150; total time=12.8min
+[CV] END bootstrap=True, class_weight=None, max_depth=25, max_features=log2, min_samples_leaf=4, min_samples_split=5, n_estimators=150; total time=12.8min
+[CV] END bootstrap=True, class_weight=None, max_depth=20, max_features=sqrt, min_samples_leaf=1, min_samples_split=5, n_estimators=150; total time=13.0min
+[CV] END bootstrap=True, class_weight=None, max_depth=30, max_features=log2, min_samples_leaf=4, min_samples_split=5, n_estimators=150; total time=13.0min
+[CV] END bootstrap=True, class_weight=None, max_depth=30, max_features=log2, min_samples_leaf=4, min_samples_split=5, n_estimators=150; total time=13.1min
+[CV] END bootstrap=True, class_weight=balanced_subsample, max_depth=25, max_features=log2, min_samples_leaf=4, min_samples_split=2, n_estimators=150; total time=13.1min
+[CV] END bootstrap=True, class_weight=None, max_depth=30, max_features=log2, min_samples_leaf=2, min_samples_split=2, n_estimators=150; total time=13.1min
+[CV] END bootstrap=True, class_weight=balanced_subsample, max_depth=25, max_features=log2, min_samples_leaf=4, min_samples_split=2, n_estimators=150; total time=13.2min
+[CV] END bootstrap=True, class_weight=None, max_depth=30, max_features=log2, min_samples_leaf=1, min_samples_split=5, n_estimators=150; total time=13.3min
+[CV] END bootstrap=True, class_weight=None, max_depth=30, max_features=log2, min_samples_leaf=1, min_samples_split=5, n_estimators=150; total time=13.3min
+[CV] END bootstrap=True, class_weight=balanced_subsample, max_depth=20, max_features=sqrt, min_samples_leaf=2, min_samples_split=5, n_estimators=150; total time=13.5min
+[CV] END bootstrap=True, class_weight=None, max_depth=20, max_features=sqrt, min_samples_leaf=1, min_samples_split=5, n_estimators=150; total time=13.5min
+[CV] END bootstrap=True, class_weight=balanced_subsample, max_depth=20, max_features=sqrt, min_samples_leaf=2, min_samples_split=5, n_estimators=150; total time=13.5min
+[CV] END bootstrap=True, class_weight=balanced_subsample, max_depth=20, max_features=sqrt, min_samples_leaf=4, min_samples_split=5, n_estimators=150; total time=13.5min
+[CV] END bootstrap=True, class_weight=balanced_subsample, max_depth=20, max_features=sqrt, min_samples_leaf=2, min_samples_split=5, n_estimators=150; total time=13.5min
+[CV] END bootstrap=True, class_weight=balanced_subsample, max_depth=20, max_features=sqrt, min_samples_leaf=4, min_samples_split=5, n_estimators=150; total time=13.5min
+[CV] END bootstrap=True, class_weight=None, max_depth=20, max_features=sqrt, min_samples_leaf=1, min_samples_split=5, n_estimators=150; total time=13.5min
+[CV] END bootstrap=True, class_weight=balanced_subsample, max_depth=20, max_features=sqrt, min_samples_leaf=4, min_samples_split=5, n_estimators=150; total time=13.6min
+[CV] END bootstrap=True, class_weight=balanced_subsample, max_depth=30, max_features=sqrt, min_samples_leaf=1, min_samples_split=2, n_estimators=150; total time=13.7min
+[CV] END bootstrap=True, class_weight=None, max_depth=25, max_features=sqrt, min_samples_leaf=4, min_samples_split=5, n_estimators=150; total time=13.9min
+[CV] END bootstrap=True, class_weight=None, max_depth=25, max_features=sqrt, min_samples_leaf=4, min_samples_split=5, n_estimators=150; total time=14.0min
+[CV] END bootstrap=True, class_weight=balanced_subsample, max_depth=30, max_features=sqrt, min_samples_leaf=1, min_samples_split=2, n_estimators=150; total time=14.0min
+[CV] END bootstrap=True, class_weight=None, max_depth=25, max_features=sqrt, min_samples_leaf=4, min_samples_split=5, n_estimators=150; total time=14.1min
+[CV] END bootstrap=True, class_weight=balanced_subsample, max_depth=30, max_features=sqrt, min_samples_leaf=1, min_samples_split=2, n_estimators=150; total time=14.2min
+[2026-01-27 00:11:34] [SUCCESS] 
+================================================================================
+[2026-01-27 00:11:34] [SUCCESS] HYPERPARAMETER TUNING COMPLETED
+[2026-01-27 00:11:34] [SUCCESS] ================================================================================
+[2026-01-27 00:11:34] [INFO] Time taken: 1596.8 seconds (26.6 minutes)
+[2026-01-27 00:11:34] [STEP] 
+Best Hyperparameters Found:
+[2026-01-27 00:11:34] [INFO]   n_estimators: 150
+[2026-01-27 00:11:34] [INFO]   min_samples_split: 5
+[2026-01-27 00:11:34] [INFO]   min_samples_leaf: 1
+[2026-01-27 00:11:34] [INFO]   max_features: sqrt
+[2026-01-27 00:11:34] [INFO]   max_depth: 20
+[2026-01-27 00:11:34] [INFO]   class_weight: None
+[2026-01-27 00:11:34] [INFO]   bootstrap: True
+[2026-01-27 00:11:34] [INFO] 
+Best Cross-Validation Score:
+[2026-01-27 00:11:34] [INFO]   Macro F1-Score: 0.8640
+[2026-01-27 00:11:34] [INFO] 
+Top 5 Parameter Combinations:
+[2026-01-27 00:11:34] [INFO] Rank | Mean F1  | Std F1   | n_est | max_d | min_split | min_leaf | max_feat
+[2026-01-27 00:11:34] [INFO] -------------------------------------------------------------------------------------
+[2026-01-27 00:11:34] [INFO]   1  | 0.8640  | 0.0011  |  150  | 20    |     5     |     1    | sqrt    
+[2026-01-27 00:11:34] [INFO]   2  | 0.8634  | 0.0011  |  100  | 30    |     5     |     1    | sqrt    
+[2026-01-27 00:11:34] [INFO]   3  | 0.8627  | 0.0017  |  150  | 30    |     5     |     1    | log2    
+[2026-01-27 00:11:34] [INFO]   4  | 0.8619  | 0.0015  |  150  | 30    |     2     |     2    | log2    
+[2026-01-27 00:11:34] [INFO]   5  | 0.8617  | 0.0012  |  100  | 30    |    10     |     2    | sqrt    
+[2026-01-27 00:11:34] [STEP] 
+================================================================================
+[2026-01-27 00:11:34] [STEP] TRAINING FINAL MODEL
+[2026-01-27 00:11:34] [STEP] ================================================================================
+[2026-01-27 00:11:34] [SUBSTEP] Model configuration:
+[2026-01-27 00:11:34] [INFO]   n_estimators: 150
+[2026-01-27 00:11:34] [INFO]   min_samples_split: 5
+[2026-01-27 00:11:34] [INFO]   min_samples_leaf: 1
+[2026-01-27 00:11:34] [INFO]   max_features: sqrt
+[2026-01-27 00:11:34] [INFO]   max_depth: 20
+[2026-01-27 00:11:34] [INFO]   class_weight: None
+[2026-01-27 00:11:34] [INFO]   bootstrap: True
+[2026-01-27 00:11:34] [INFO] 
+Training dataset: 9,759,619 samples × 45 features
+[2026-01-27 00:11:34] [INFO] Number of classes: 6
+[2026-01-27 00:11:34] [STEP] 
+Training Random Forest model...
+[2026-01-27 00:11:34] [INFO] This may take 10-20 minutes depending on dataset size...
+[2026-01-27 00:16:32] [SUCCESS] 
+================================================================================
+[2026-01-27 00:16:32] [SUCCESS] FINAL MODEL TRAINING COMPLETED
+[2026-01-27 00:16:32] [SUCCESS] ================================================================================
+[2026-01-27 00:16:32] [INFO] Time taken: 297.4 seconds (5.0 minutes)
+[2026-01-27 00:16:32] [SUBSTEP] 
+Model Architecture:
+[2026-01-27 00:16:32] [INFO]   Number of trees: 150
+[2026-01-27 00:16:32] [INFO]   Total nodes: 2,654,654
+[2026-01-27 00:16:32] [INFO]   Total leaves: 1,327,402
+[2026-01-27 00:16:32] [INFO]   Average tree depth: 20.0
+[2026-01-27 00:16:32] [INFO]   Maximum tree depth: 20
+[2026-01-27 00:16:32] [STEP] 
+Analyzing feature importances...
+[2026-01-27 00:16:32] [INFO] 
+Top 20 Features by Importance:
+[2026-01-27 00:16:32] [INFO] Rank | Feature Name                          | Importance | Cumulative
+[2026-01-27 00:16:32] [INFO] -------------------------------------------------------------------------------------
+[2026-01-27 00:16:32] [INFO]   1  | Dst Port                                 |   0.0678   |  6.78%
+[2026-01-27 00:16:32] [INFO]   2  | Fwd Seg Size Min                         |   0.0538   | 12.16%
+[2026-01-27 00:16:32] [INFO]   3  | Init Fwd Win Byts                        |   0.0491   | 17.07%
+[2026-01-27 00:16:32] [INFO]   4  | Fwd Header Len                           |   0.0454   | 21.61%
+[2026-01-27 00:16:32] [INFO]   5  | Bwd Seg Size Avg                         |   0.0319   | 24.80%
+[2026-01-27 00:16:32] [INFO]   6  | Bwd Pkt Len Max                          |   0.0315   | 27.95%
+[2026-01-27 00:16:32] [INFO]   7  | TotLen Fwd Pkts                          |   0.0309   | 31.05%
+[2026-01-27 00:16:32] [INFO]   8  | Bwd Header Len                           |   0.0304   | 34.09%
+[2026-01-27 00:16:32] [INFO]   9  | TotLen Bwd Pkts                          |   0.0291   | 37.00%
+[2026-01-27 00:16:32] [INFO]  10  | Bwd Pkt Len Std                          |   0.0289   | 39.89%
+[2026-01-27 00:16:32] [INFO]  11  | Bwd Pkt Len Mean                         |   0.0287   | 42.77%
+[2026-01-27 00:16:32] [INFO]  12  | Flow Duration                            |   0.0255   | 45.32%
+[2026-01-27 00:16:32] [INFO]  13  | Fwd IAT Tot                              |   0.0251   | 47.82%
+[2026-01-27 00:16:32] [INFO]  14  | Subflow Bwd Pkts                         |   0.0248   | 50.31%
+[2026-01-27 00:16:32] [INFO]  15  | Fwd Act Data Pkts                        |   0.0248   | 52.78%
+[2026-01-27 00:16:32] [INFO]  16  | Tot Fwd Pkts                             |   0.0242   | 55.21%
+[2026-01-27 00:16:32] [INFO]  17  | Subflow Fwd Pkts                         |   0.0236   | 57.57%
+[2026-01-27 00:16:32] [INFO]  18  | Subflow Fwd Byts                         |   0.0225   | 59.82%
+[2026-01-27 00:16:32] [INFO]  19  | Pkt Len Std                              |   0.0215   | 61.97%
+[2026-01-27 00:16:32] [INFO]  20  | Pkt Len Var                              |   0.0214   | 64.12%
+[2026-01-27 00:16:32] [INFO] 
+Feature Importance Summary:
+[2026-01-27 00:16:32] [INFO]   Top 10 features: 39.89% of total importance
+[2026-01-27 00:16:32] [INFO]   Top 20 features: 64.12% of total importance
+[2026-01-27 00:16:32] [INFO]   Total features: 45
+[2026-01-27 00:16:32] [STEP] 
+================================================================================
+[2026-01-27 00:16:32] [STEP] GENERATING TRAINING VISUALIZATIONS
+[2026-01-27 00:16:32] [STEP] ================================================================================
+[2026-01-27 00:16:33] [SUCCESS] Saved figure: hyperparameter_n_estimators_effect.png (151.3 KB)
+[2026-01-27 00:16:33] [SUCCESS] Saved figure: hyperparameter_max_depth_effect.png (171.6 KB)
+[2026-01-27 00:16:34] [SUCCESS] Saved figure: top_combinations_comparison.png (180.6 KB)
+[2026-01-27 00:16:35] [SUCCESS] Saved figure: feature_importances_top30.png (383.2 KB)
+[2026-01-27 00:16:35] [SUCCESS] Saved figure: cumulative_feature_importance.png (213.3 KB)
+[2026-01-27 00:16:36] [SUCCESS] Saved figure: cv_scores_distribution.png (235.1 KB)
+[2026-01-27 00:16:36] [SUCCESS] 
+All training visualizations generated successfully!
+[2026-01-27 00:16:36] [STEP] 
+================================================================================
+[2026-01-27 00:16:36] [STEP] SAVING TRAINING ARTIFACTS
+[2026-01-27 00:16:36] [STEP] ================================================================================
+[2026-01-27 00:16:38] [INFO] Saved trained model: random_forest_model.joblib (283.6 MB)
+[2026-01-27 00:16:39] [INFO] Saved RandomizedSearchCV object: randomized_search_cv.joblib (123.9 MB)
+[2026-01-27 00:16:39] [INFO] Saved feature importances: feature_importances.csv
+[2026-01-27 00:16:39] [INFO] Saved tuning results: hyperparameter_tuning_results.csv
+[2026-01-27 00:16:39] [INFO] Saved training metadata: training_metadata.json
+[2026-01-27 00:16:39] [INFO] 
+Total artifacts storage: 407.5 MB
+[2026-01-27 00:16:39] [SUCCESS] All training artifacts saved successfully!
+[2026-01-27 00:16:39] [STEP] 
+Generating training report...
+[2026-01-27 00:16:39] [SUCCESS] Training report saved: reports/training/training_results.txt
+[2026-01-27 00:16:39] [INFO] Report length: 134 lines
+[2026-01-27 00:16:39] [SUCCESS] 
+================================================================================
+[2026-01-27 00:16:39] [SUCCESS] MODULE 4: MODEL TRAINING COMPLETED SUCCESSFULLY
+[2026-01-27 00:16:39] [SUCCESS] ================================================================================
+[2026-01-27 00:16:39] [INFO] Total time: 1903.0 seconds (31.7 minutes)
+[2026-01-27 00:16:39] [INFO] Best CV F1-score: 0.8640
+[2026-01-27 00:16:39] [INFO] Model saved to: trained_model/
+[2026-01-27 00:16:39] [INFO] Reports saved to: reports/training/
+
+[2026-01-27 00:16:39] [SUCCESS] Requested modules completed!
+
+paudeladrin@instance-20260123-213323:~/Nids$ 

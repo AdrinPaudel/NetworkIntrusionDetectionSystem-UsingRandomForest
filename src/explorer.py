@@ -682,6 +682,289 @@ def create_memory_usage_chart(memory_stats, output_dir):
     save_figure(fig, filepath)
 
 
+def analyze_label_consolidation_impact(df, label_col, output_dir):
+    """
+    Analyze the impact of label consolidation (before and after mapping).
+    Shows imbalance ratios, percentages, and prepares visualization data.
+    
+    Parameters:
+    -----------
+    df : pandas.DataFrame
+        Original dataset with original labels
+    label_col : str
+        Label column name
+    output_dir : str
+        Output directory
+        
+    Returns:
+    --------
+    dict : Consolidation impact statistics
+    """
+    log_message("Analyzing label consolidation impact...", level="STEP")
+    
+    # BEFORE consolidation (original labels)
+    original_counts = df[label_col].value_counts().sort_values(ascending=False)
+    original_percentages = (original_counts / len(df) * 100)
+    original_imbalance = calculate_imbalance_ratio(original_counts)
+    
+    # Calculate Gini before consolidation
+    original_proportions = original_counts / len(df)
+    original_gini = 1 - np.sum(original_proportions ** 2)
+    
+    log_message(f"BEFORE Consolidation:", level="INFO")
+    log_message(f"  Classes: {len(original_counts)}", level="INFO")
+    log_message(f"  Gini Coefficient: {original_gini:.4f}", level="INFO")
+    log_message(f"  Majority class: {original_counts.index[0]} ({original_counts.iloc[0]:,} samples, {original_percentages.iloc[0]:.2f}%)", 
+               level="INFO")
+    log_message(f"  Minority class: {original_counts.index[-1]} ({original_counts.iloc[-1]:,} samples, {original_percentages.iloc[-1]:.2f}%)", 
+               level="INFO")
+    log_message(f"  Imbalance ratio: {original_imbalance[original_counts.index[-1]]:.2f}:1", level="INFO")
+    print()
+    
+    # AFTER consolidation (consolidated labels)
+    df_consolidated = df.copy()
+    df_consolidated[label_col] = df_consolidated[label_col].map(config.LABEL_MAPPING).fillna(df_consolidated[label_col])
+    
+    # Remove dropped classes
+    df_consolidated = df_consolidated[df_consolidated[label_col] != '__DROP__'].copy()
+    
+    consolidated_counts = df_consolidated[label_col].value_counts().sort_values(ascending=False)
+    consolidated_percentages = (consolidated_counts / len(df_consolidated) * 100)
+    consolidated_imbalance = calculate_imbalance_ratio(consolidated_counts)
+    
+    # Calculate Gini after consolidation
+    consolidated_proportions = consolidated_counts / len(df_consolidated)
+    consolidated_gini = 1 - np.sum(consolidated_proportions ** 2)
+    
+    log_message(f"AFTER Consolidation:", level="INFO")
+    log_message(f"  Classes: {len(consolidated_counts)}", level="INFO")
+    log_message(f"  Gini Coefficient: {consolidated_gini:.4f}", level="INFO")
+    log_message(f"  Majority class: {consolidated_counts.index[0]} ({consolidated_counts.iloc[0]:,} samples, {consolidated_percentages.iloc[0]:.2f}%)", 
+               level="INFO")
+    log_message(f"  Minority class: {consolidated_counts.index[-1]} ({consolidated_counts.iloc[-1]:,} samples, {consolidated_percentages.iloc[-1]:.2f}%)", 
+               level="INFO")
+    log_message(f"  Imbalance ratio: {consolidated_imbalance[consolidated_counts.index[-1]]:.2f}:1", level="INFO")
+    print()
+    
+    # Calculate improvements
+    gini_improvement = (original_gini - consolidated_gini) / original_gini * 100 if original_gini > 0 else 0
+    classes_removed = len(original_counts) - len(consolidated_counts)
+    rows_removed = len(df) - len(df_consolidated)
+    
+    log_message(f"Consolidation Impact:", level="INFO")
+    log_message(f"  Gini Improvement: {gini_improvement:+.2f}%", level="INFO")
+    log_message(f"  Classes Reduced: {classes_removed} ({len(original_counts)} → {len(consolidated_counts)})", level="INFO")
+    log_message(f"  Rows Removed (SQL Injection, etc): {format_number(rows_removed)} ({rows_removed/len(df)*100:.2f}%)", level="INFO")
+    print()
+    
+    # Create visualization
+    create_consolidation_imbalance_chart(
+        original_counts, original_percentages, original_gini,
+        consolidated_counts, consolidated_percentages, consolidated_gini,
+        output_dir
+    )
+    
+    return {
+        'original_counts': original_counts,
+        'original_percentages': original_percentages,
+        'original_imbalance_ratios': original_imbalance,
+        'original_gini': original_gini,
+        'consolidated_counts': consolidated_counts,
+        'consolidated_percentages': consolidated_percentages,
+        'consolidated_imbalance_ratios': consolidated_imbalance,
+        'consolidated_gini': consolidated_gini,
+        'gini_improvement_pct': gini_improvement,
+        'classes_removed': classes_removed,
+        'rows_removed': rows_removed
+    }
+
+
+def create_consolidation_imbalance_chart(original_counts, original_pcts, original_gini,
+                                         consolidated_counts, consolidated_pcts, consolidated_gini,
+                                         output_dir):
+    """
+    Create 4 separate comparison charts for label consolidation impact.
+    
+    Creates:
+    1. Bar chart BEFORE consolidation
+    2. Bar chart AFTER consolidation  
+    3. Pie chart BEFORE with side table
+    4. Pie chart AFTER with side table
+    
+    Parameters:
+    -----------
+    original_counts : Series
+        Original class counts
+    original_pcts : Series
+        Original percentages
+    original_gini : float
+        Original Gini coefficient
+    consolidated_counts : Series
+        Consolidated class counts
+    consolidated_pcts : Series
+        Consolidated percentages
+    consolidated_gini : float
+        Consolidated Gini coefficient
+    output_dir : str
+        Output directory
+    """
+    try:
+        # 1. Bar chart BEFORE consolidation
+        fig1, ax1 = plt.subplots(figsize=(14, 7))
+        colors_before = plt.cm.Set2(np.linspace(0, 1, len(original_counts)))
+        bars1 = ax1.bar(range(len(original_counts)), original_counts.values, color=colors_before, edgecolor='black', linewidth=2)
+        ax1.set_xlabel('Class Labels', fontsize=13, fontweight='bold')
+        ax1.set_ylabel('Number of Samples', fontsize=13, fontweight='bold')
+        ax1.set_title(f'BEFORE Consolidation\n({len(original_counts)} classes, Gini={original_gini:.4f})', 
+                     fontsize=14, fontweight='bold', pad=20)
+        ax1.set_xticks(range(len(original_counts)))
+        ax1.set_xticklabels(original_counts.index, rotation=45, ha='right', fontsize=11)
+        ax1.grid(axis='y', alpha=0.3, linestyle='--')
+        
+        # Add value labels on bars
+        for bar, count, pct in zip(bars1, original_counts.values, original_pcts.values):
+            height = bar.get_height()
+            ax1.text(bar.get_x() + bar.get_width()/2., height,
+                    f'{pct:.2f}%\n({format_number(int(count))})',
+                    ha='center', va='bottom', fontsize=10, fontweight='bold')
+        
+        fig1.tight_layout()
+        save_figure(fig1, os.path.join(output_dir, 'consolidation_bar_before.png'), dpi=config.FIGURE_DPI)
+        plt.close()
+        log_message(f"✓ Saved: consolidation_bar_before.png", level="SUCCESS")
+        
+        # 2. Bar chart AFTER consolidation
+        fig2, ax2 = plt.subplots(figsize=(12, 7))
+        colors_after = plt.cm.Set3(np.linspace(0, 1, len(consolidated_counts)))
+        bars2 = ax2.bar(range(len(consolidated_counts)), consolidated_counts.values, color=colors_after, edgecolor='black', linewidth=2)
+        ax2.set_xlabel('Class Labels', fontsize=13, fontweight='bold')
+        ax2.set_ylabel('Number of Samples', fontsize=13, fontweight='bold')
+        ax2.set_title(f'AFTER Consolidation\n({len(consolidated_counts)} classes, Gini={consolidated_gini:.4f})', 
+                     fontsize=14, fontweight='bold', pad=20)
+        ax2.set_xticks(range(len(consolidated_counts)))
+        ax2.set_xticklabels(consolidated_counts.index, rotation=45, ha='right', fontsize=11)
+        ax2.grid(axis='y', alpha=0.3, linestyle='--')
+        
+        # Add value labels on bars
+        for bar, count, pct in zip(bars2, consolidated_counts.values, consolidated_pcts.values):
+            height = bar.get_height()
+            ax2.text(bar.get_x() + bar.get_width()/2., height,
+                    f'{pct:.2f}%\n({format_number(int(count))})',
+                    ha='center', va='bottom', fontsize=10, fontweight='bold')
+        
+        fig2.tight_layout()
+        save_figure(fig2, os.path.join(output_dir, 'consolidation_bar_after.png'), dpi=config.FIGURE_DPI)
+        plt.close()
+        log_message(f"✓ Saved: consolidation_bar_after.png", level="SUCCESS")
+        
+        # 3. Pie chart BEFORE with side table
+        fig3 = plt.figure(figsize=(14, 7))
+        ax3_pie = fig3.add_subplot(121)
+        ax3_table = fig3.add_subplot(122)
+        
+        # Pie chart (no labels on pie)
+        pie_result = ax3_pie.pie(original_pcts.values, colors=colors_before, startangle=90,
+                                 textprops={'fontsize': 11})
+        # Handle both matplotlib versions: some return (wedges, texts, autotexts), others just (wedges, texts)
+        if len(pie_result) == 3:
+            wedges, texts, autotexts = pie_result
+        else:
+            wedges, texts = pie_result
+            autotexts = []
+        
+        ax3_pie.set_title(f'BEFORE Consolidation\nGini: {original_gini:.4f}', fontsize=13, fontweight='bold')
+        
+        # Remove percentage labels from pie
+        for autotext in autotexts:
+            autotext.set_visible(False)
+        for text in texts:
+            text.set_visible(False)
+        
+        # Side table with class names and percentages
+        ax3_table.axis('off')
+        table_data = []
+        table_data.append(['Class Name', 'Count', 'Percentage'])
+        for cls, count, pct in zip(original_counts.index, original_counts.values, original_pcts.values):
+            table_data.append([str(cls), format_number(int(count)), f'{pct:.2f}%'])
+        
+        table3 = ax3_table.table(cellText=table_data, cellLoc='left', loc='center',
+                                colWidths=[0.45, 0.25, 0.25])
+        table3.auto_set_font_size(False)
+        table3.set_fontsize(10)
+        table3.scale(1, 2.2)
+        
+        # Style header
+        for j in range(3):
+            table3[(0, j)].set_facecolor('#4CAF50')
+            table3[(0, j)].set_text_props(weight='bold', color='white')
+        
+        # Color code table rows to match pie
+        for i in range(1, len(table_data)):
+            for j in range(3):
+                table3[(i, j)].set_facecolor(colors_before[i-1])
+        
+        fig3.suptitle('Class Distribution - BEFORE Consolidation', fontsize=14, fontweight='bold', y=0.98)
+        fig3.tight_layout()
+        save_figure(fig3, os.path.join(output_dir, 'consolidation_pie_before.png'), dpi=config.FIGURE_DPI)
+        plt.close()
+        log_message(f"✓ Saved: consolidation_pie_before.png", level="SUCCESS")
+        
+        # 4. Pie chart AFTER with side table
+        fig4 = plt.figure(figsize=(12, 7))
+        ax4_pie = fig4.add_subplot(121)
+        ax4_table = fig4.add_subplot(122)
+        
+        # Pie chart (no labels on pie)
+        pie_result = ax4_pie.pie(consolidated_pcts.values, colors=colors_after, startangle=90,
+                                 textprops={'fontsize': 11})
+        # Handle both matplotlib versions: some return (wedges, texts, autotexts), others just (wedges, texts)
+        if len(pie_result) == 3:
+            wedges, texts, autotexts = pie_result
+        else:
+            wedges, texts = pie_result
+            autotexts = []
+        
+        ax4_pie.set_title(f'AFTER Consolidation\nGini: {consolidated_gini:.4f}', fontsize=13, fontweight='bold')
+        
+        # Remove percentage labels from pie
+        for autotext in autotexts:
+            autotext.set_visible(False)
+        for text in texts:
+            text.set_visible(False)
+        
+        # Side table with class names and percentages
+        ax4_table.axis('off')
+        table_data = []
+        table_data.append(['Class Name', 'Count', 'Percentage'])
+        for cls, count, pct in zip(consolidated_counts.index, consolidated_counts.values, consolidated_pcts.values):
+            table_data.append([str(cls), format_number(int(count)), f'{pct:.2f}%'])
+        
+        table4 = ax4_table.table(cellText=table_data, cellLoc='left', loc='center',
+                                colWidths=[0.45, 0.25, 0.25])
+        table4.auto_set_font_size(False)
+        table4.set_fontsize(10)
+        table4.scale(1, 2.2)
+        
+        # Style header
+        for j in range(3):
+            table4[(0, j)].set_facecolor('#2196F3')
+            table4[(0, j)].set_text_props(weight='bold', color='white')
+        
+        # Color code table rows to match pie
+        for i in range(1, len(table_data)):
+            for j in range(3):
+                table4[(i, j)].set_facecolor(colors_after[i-1])
+        
+        fig4.suptitle('Class Distribution - AFTER Consolidation', fontsize=14, fontweight='bold', y=0.98)
+        fig4.tight_layout()
+        save_figure(fig4, os.path.join(output_dir, 'consolidation_pie_after.png'), dpi=config.FIGURE_DPI)
+        plt.close()
+        log_message(f"✓ Saved: consolidation_pie_after.png", level="SUCCESS")
+        
+    except Exception as e:
+        log_message(f"Failed to create consolidation charts: {str(e)}", level="WARNING")
+
+
 def generate_exploration_report(all_stats, df, label_col, output_dir):
     """
     Generate comprehensive text report.
@@ -748,6 +1031,49 @@ def generate_exploration_report(all_stats, df, label_col, output_dir):
     report_lines.append(f"   Gini Coefficient: {class_stats['gini_coefficient']:.3f}")
     report_lines.append(f"   Classes requiring SMOTE (<1%): {len(class_stats['classes_needing_smote'])}")
     report_lines.append("")
+    
+    # 2.5 Label Consolidation Impact
+    if 'consolidation' in all_stats:
+        report_lines.append("2.5 LABEL CONSOLIDATION IMPACT")
+        report_lines.append("   " + "-" * 30)
+        report_lines.append("")
+        
+        cons = all_stats['consolidation']
+        
+        report_lines.append("   BEFORE Consolidation:")
+        report_lines.append(f"     Classes: {len(cons['original_counts'])}")
+        report_lines.append(f"     Gini Coefficient: {cons['original_gini']:.4f}")
+        report_lines.append("")
+        report_lines.append("     Original Class Distribution:")
+        report_lines.append("     Class Name                    Count         Percentage")
+        report_lines.append("     " + "-" * 65)
+        
+        for cls in cons['original_counts'].index:
+            count = cons['original_counts'][cls]
+            pct = cons['original_percentages'][cls]
+            report_lines.append(f"     {cls:25} {count:13,}    {pct:8.2f}%")
+        
+        report_lines.append("")
+        report_lines.append("   AFTER Consolidation (SQL Injection dropped):")
+        report_lines.append(f"     Classes: {len(cons['consolidated_counts'])}")
+        report_lines.append(f"     Gini Coefficient: {cons['consolidated_gini']:.4f}")
+        report_lines.append("")
+        report_lines.append("     Consolidated Class Distribution:")
+        report_lines.append("     Class Name                    Count         Percentage    Imbalance Ratio")
+        report_lines.append("     " + "-" * 73)
+        
+        for cls in cons['consolidated_counts'].index:
+            count = cons['consolidated_counts'][cls]
+            pct = cons['consolidated_percentages'][cls]
+            ratio = cons['consolidated_imbalance_ratios'][cls]
+            report_lines.append(f"     {cls:25} {count:13,}    {pct:8.2f}%    {ratio:12.2f}")
+        
+        report_lines.append("")
+        report_lines.append("   Consolidation Summary:")
+        report_lines.append(f"     Classes Reduced: {cons['classes_removed']} ({len(cons['original_counts'])} → {len(cons['consolidated_counts'])})")
+        report_lines.append(f"     Rows Removed (SQL Injection, etc): {format_number(cons['rows_removed'])} ({cons['rows_removed']/len(df)*100:.2f}%)")
+        report_lines.append(f"     Gini Improvement: {cons['gini_improvement_pct']:+.2f}%")
+        report_lines.append("")
     
     # 3. Data Quality Assessment
     report_lines.append("3. DATA QUALITY ASSESSMENT")
@@ -1184,6 +1510,10 @@ def explore_data(df, label_col, protocol_col=None):
         class_stats = analyze_class_distribution(df, label_col)
         print()
         
+        # 1.5. Analyze label consolidation impact
+        consolidation_stats = analyze_label_consolidation_impact(df, label_col, output_dir)
+        print()
+        
         # 2. Check missing data
         missing_stats = check_missing_data(df)
         print()
@@ -1224,6 +1554,7 @@ def explore_data(df, label_col, protocol_col=None):
         # 10. Generate comprehensive report
         all_stats = {
             'class_distribution': class_stats,
+            'consolidation': consolidation_stats,
             'missing_data': missing_stats,
             'inf_values': inf_stats,
             'duplicates': dup_stats,

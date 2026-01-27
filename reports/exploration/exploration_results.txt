@@ -1,12 +1,12 @@
 ================================================================================
                     DATA EXPLORATION REPORT
                          CICIDS2018 Dataset
-                    Generated: 2026-01-25 13:09:43
+                    Generated: 2026-01-26 10:02:17
 ================================================================================
 
 1. DATASET OVERVIEW
    ----------------
-   Total Rows:          16,233,002
+   Total Rows:          16,232,943
    Total Columns:       80
    Memory Usage:        11.66 GB
 
@@ -20,7 +20,7 @@
 
 2. CLASS DISTRIBUTION
    ------------------
-   Total Classes: 16
+   Total Classes: 15
 
    Class Name                    Count         Percentage    Imbalance Ratio
    -------------------------------------------------------------------------
@@ -39,24 +39,67 @@
    Brute Force -Web                    611        0.00%        22069.90
    Brute Force -XSS                    230        0.00%        58629.17
    SQL Injection                        87        0.00%       154996.64
-   Label                                59        0.00%       228554.37
 
    Imbalance Severity: EXTREME
    Gini Coefficient: 0.305
-   Classes requiring SMOTE (<1%): 9
+   Classes requiring SMOTE (<1%): 8
+
+2.5 LABEL CONSOLIDATION IMPACT
+   ------------------------------
+
+   BEFORE Consolidation:
+     Classes: 15
+     Gini Coefficient: 0.3053
+
+     Original Class Distribution:
+     Class Name                    Count         Percentage
+     -----------------------------------------------------------------
+     Benign                       13,484,708       83.07%
+     DDOS attack-HOIC                686,012        4.23%
+     DDoS attacks-LOIC-HTTP          576,191        3.55%
+     DoS attacks-Hulk                461,912        2.85%
+     Bot                             286,191        1.76%
+     FTP-BruteForce                  193,360        1.19%
+     SSH-Bruteforce                  187,589        1.16%
+     Infilteration                   161,934        1.00%
+     DoS attacks-SlowHTTPTest        139,890        0.86%
+     DoS attacks-GoldenEye            41,508        0.26%
+     DoS attacks-Slowloris            10,990        0.07%
+     DDOS attack-LOIC-UDP              1,730        0.01%
+     Brute Force -Web                    611        0.00%
+     Brute Force -XSS                    230        0.00%
+     SQL Injection                        87        0.00%
+
+   AFTER Consolidation (SQL Injection dropped):
+     Classes: 6
+     Gini Coefficient: 0.3013
+
+     Consolidated Class Distribution:
+     Class Name                    Count         Percentage    Imbalance Ratio
+     -------------------------------------------------------------------------
+     Benign                       13,484,708       83.07%            1.00
+     DDoS                          1,263,933        7.79%           10.67
+     DoS                             654,300        4.03%           20.61
+     Brute Force                     381,790        2.35%           35.32
+     Botnet                          286,191        1.76%           47.12
+     Infilteration                   161,934        1.00%           83.27
+
+   Consolidation Summary:
+     Classes Reduced: 9 (15 → 6)
+     Rows Removed (SQL Injection, etc): 87 (0.00%)
+     Gini Improvement: +1.32%
 
 3. DATA QUALITY ASSESSMENT
    ------------------------
 
    3.1 Missing Values (NaN)
-       Total NaN cells: 64,205
+       Total NaN cells: 59,721
        Percentage of dataset: 0.005%
-       Columns with NaN: 76/80 (95.0%)
-       Rows with NaN: 59,780 (0.37%)
+       Columns with NaN: 1/80 (1.2%)
+       Rows with NaN: 59,721 (0.37%)
 
        NaN Distribution (rows by NaN count):
          1 NaN(s): 59,721 rows (0.368%)
-         76 NaN(s): 59 rows (0.000%)
 
    3.2 Infinite Values (Inf/-Inf)
        Total Inf cells: 131,799
@@ -68,11 +111,11 @@
          2 Inf(s): 36,039 rows (0.222%)
 
    3.3 Duplicate Rows
-       Duplicate count: 433,253
+       Duplicate count: 433,195
        Percentage: 2.669%
 
-   Total rows to be removed: ~588,793 (3.63%)
-   Expected clean dataset size: ~15,644,209 rows
+   Total rows to be removed: ~588,676 (3.63%)
+   Expected clean dataset size: ~15,644,267 rows
 
 4. FEATURE CORRELATION ANALYSIS
    ----------------------------
@@ -159,6 +202,9 @@
    Column Name                                Non-Null %       Null % Data Type      
    ------------------------------------------------------------------------------------------
    Flow Byts/s                                    99.63%        0.37% float64        
+   Dst Port                                      100.00%        0.00% object         
+   Protocol                                      100.00%        0.00% object         
+   Timestamp                                     100.00%        0.00% str            
    Flow Duration                                 100.00%        0.00% float64        
    Tot Fwd Pkts                                  100.00%        0.00% float64        
    Tot Bwd Pkts                                  100.00%        0.00% float64        
@@ -234,9 +280,6 @@
    Idle Std                                      100.00%        0.00% float64        
    Idle Max                                      100.00%        0.00% float64        
    Idle Min                                      100.00%        0.00% float64        
-   Dst Port                                      100.00%        0.00% object         
-   Protocol                                      100.00%        0.00% object         
-   Timestamp                                     100.00%        0.00% str            
    Label                                         100.00%        0.00% str            
 
    ✓ All columns have <10% missing data - good quality dataset
@@ -257,11 +300,11 @@
    Based on exploration findings and CICIDS2018 specification:
 
    1. Data Cleaning:
-      ✓ REMOVE rows with NaN: 59,780 rows (0.37%)
+      ✓ REMOVE rows with NaN: 59,721 rows (0.37%)
       ✓ REMOVE rows with Inf: 95,760 rows (0.59%)
-      ✓ REMOVE duplicate rows: 433,253 rows (2.669%)
-      Expected loss: ~588,793 rows (3.63%) - ACCEPTABLE
-      Expected clean dataset: ~15,644,209 rows
+      ✓ REMOVE duplicate rows: 433,195 rows (2.669%)
+      Expected loss: ~588,676 rows (3.63%) - ACCEPTABLE
+      Expected clean dataset: ~15,644,267 rows
 
    2. Label Consolidation:
       ✓ Merge DDoS subcategories → "DDoS"
@@ -287,6 +330,6 @@
 
 Report generated by: NIDS CICIDS2018 Project
 Module: Data Exploration (Module 2)
-Timestamp: 2026-01-25 13:09:43
+Timestamp: 2026-01-26 10:02:17
 Next step: Data Preprocessing (Module 3)
 ================================================================================

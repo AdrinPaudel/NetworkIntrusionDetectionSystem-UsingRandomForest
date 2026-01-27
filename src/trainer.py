@@ -25,7 +25,8 @@ from datetime import datetime
 from pathlib import Path
 
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import RandomizedSearchCV
+from sklearn.model_selection import RandomizedSearchCV, train_test_split
+from joblib import parallel_backend
 from sklearn.metrics import (
     f1_score, accuracy_score, precision_score, recall_score,
     classification_report, confusion_matrix, make_scorer
@@ -182,32 +183,50 @@ def perform_hyperparameter_tuning(X_train, y_train, n_iter=20, cv=5, random_stat
     log_step("="*80, "STEP")
     
     start_time = time.time()
+
+    # Optional downsampling for tuning to control memory
+    tune_frac = config.TUNING_SAMPLE_FRACTION
+    if 0 < tune_frac < 1.0:
+        log_step(f"Sampling {tune_frac:.0%} of training data for tuning to reduce memory...", "SUBSTEP")
+        X_train, _, y_train, _ = train_test_split(
+            X_train,
+            y_train,
+            train_size=tune_frac,
+            stratify=y_train,
+            random_state=random_state,
+            shuffle=True
+        )
+        log_step(f"Tuning subset: {X_train.shape[0]:,} samples × {X_train.shape[1]} features", "INFO")
+    else:
+        log_step("Using full training data for tuning (no sampling)", "INFO")
     
     # Define search space
     param_distributions = define_hyperparameter_search_space()
     
     # Create base estimator
     log_step("\nInitializing Random Forest base estimator...", "SUBSTEP")
-    log_step(f"Using ALL available cores (n_jobs=-1) for maximum speed", "SUBSTEP")
+    log_step(f"RF threads per fit: {config.N_JOBS_LIGHT}; max_samples={config.RF_MAX_SAMPLES}", "SUBSTEP")
     
     rf = RandomForestClassifier(
         random_state=random_state,
-        n_jobs=config.N_JOBS_LIGHT,  # Bound per-estimator parallelism to 16 threads
+        n_jobs=config.N_JOBS_LIGHT,  # Bound per-estimator parallelism to available threads
+        max_samples=config.RF_MAX_SAMPLES,
         verbose=0
     )
     
-    # Create scoring metric (macro F1-score)
+    # Create scoring metric (macro F1-score, robust to missing classes) and avoid NaNs
     log_step("Setting up macro F1-score as optimization metric...", "SUBSTEP")
-    scoring = make_scorer(f1_score, average='macro')
+    scoring = make_scorer(f1_score, average='macro', zero_division=0)
     
     # Create RandomizedSearchCV
     log_step(f"\nConfiguring RandomizedSearchCV:", "SUBSTEP")
     log_step(f"  Iterations: {n_iter}")
     log_step(f"  Cross-validation folds: {cv}")
-    log_step(f"  Scoring: macro F1-score")
-    log_step(f"  Parallel CV jobs: {config.N_JOBS_CV} (balanced for 64 vCPU)")
-    log_step(f"  RF jobs per CV: {config.N_JOBS_LIGHT} threads")
+    log_step(f"  Scoring: macro F1-score + garbage collection after each fold")
+    log_step(f"  Parallel CV jobs: auto (-1) with threading backend; pre_dispatch='n_jobs'")
+    log_step(f"  RF threads per fit: {config.N_JOBS_LIGHT}")
     log_step(f"  Total model fits: {n_iter * cv}")
+    log_step(f"  Strategy: Threaded CV (shared memory) + per-fold gc; tuning subset optional")
     
     random_search = RandomizedSearchCV(
         estimator=rf,
@@ -215,26 +234,30 @@ def perform_hyperparameter_tuning(X_train, y_train, n_iter=20, cv=5, random_stat
         n_iter=n_iter,
         cv=cv,
         scoring=scoring,
-        n_jobs=config.N_JOBS_CV,  # 4 CV jobs * 16 threads each ≈ 64 logical threads
+        n_jobs=config.N_JOBS_CV,  # -1 uses all cores; threading backend shares memory
+        pre_dispatch='n_jobs',  # Queue equals workers; threading backend avoids data copies
         random_state=random_state,
         verbose=2,
-        pre_dispatch='n_jobs',  # Load only current batch to save memory
         return_train_score=False,  # Don't store train scores to save memory
-        refit=True  # Refit best model on full training set
+        refit=True,  # Refit best model on full training set
+        error_score=0  # If a fold errors, treat its score as 0 instead of NaN
     )
     
     # Perform search
     log_step(f"\nStarting RandomizedSearchCV...", "STEP")
-    log_step(f"Training dataset: {X_train.shape[0]:,} samples × {X_train.shape[1]} features")
-    log_step(f"Expected time: 15-30 minutes (depends on data size and CPU)")
+    log_step(f"Training dataset (shared across threads): {X_train.shape[0]:,} samples × {X_train.shape[1]} features")
+    log_step(f"Expected time: depends on VM cores (-1 jobs uses all)")
+    log_step(f"Memory strategy: threaded CV shares data + gc per fold; pre_dispatch='n_jobs'")
     log_step("")
     
-    random_search.fit(X_train, y_train)
+    # Pre-fit garbage collection
+    gc.collect()
     
-    # Aggressive garbage collection after fitting
-    if config.ENABLE_MEMORY_OPTIMIZATION:
-        log_step("Running garbage collection to free memory...", "SUBSTEP")
-        gc.collect()
+    with parallel_backend('threading', n_jobs=config.N_JOBS_CV):
+        random_search.fit(X_train, y_train)
+    
+    # Post-fit garbage collection
+    gc.collect()
     
     elapsed = time.time() - start_time
     
@@ -256,6 +279,11 @@ def perform_hyperparameter_tuning(X_train, y_train, n_iter=20, cv=5, random_stat
     # Create results DataFrame
     results_df = pd.DataFrame(random_search.cv_results_)
     results_df = results_df.sort_values('rank_test_score')
+    # Replace any NaN scores with 0 to keep downstream reporting stable
+    if results_df['mean_test_score'].isna().all():
+        log_step("All CV scores are NaN; replacing with 0 for reporting and plots", "WARNING")
+    results_df['mean_test_score'] = results_df['mean_test_score'].fillna(0)
+    results_df['std_test_score'] = results_df['std_test_score'].fillna(0)
     
     # Display top 5 combinations
     log_step("\nTop 5 Parameter Combinations:")
@@ -279,8 +307,8 @@ def perform_hyperparameter_tuning(X_train, y_train, n_iter=20, cv=5, random_stat
         'cv_folds': cv,
         'total_fits': n_iter * cv,
         'best_params': random_search.best_params_,
-        'best_cv_score': float(random_search.best_score_),
-        'best_cv_std': float(results_df.iloc[0]['std_test_score']),
+        'best_cv_score': float(np.nan_to_num(random_search.best_score_, nan=0.0)),
+        'best_cv_std': float(np.nan_to_num(results_df.iloc[0]['std_test_score'], nan=0.0)),
         'search_space_size': np.prod([len(v) for v in param_distributions.values()]),
         'time_seconds': elapsed,
         'time_minutes': elapsed / 60,
@@ -469,6 +497,12 @@ def plot_hyperparameter_effect(results_df, param_name, output_dir):
     
     grouped.columns = [param_name, 'mean_f1', 'std_f1', 'count']
     grouped = grouped.sort_values(param_name)
+
+    # If all scores are NaN/zero, skip plotting
+    if grouped['mean_f1'].dropna().empty:
+        log_step(f"Skipping plot for {param_name}: all CV scores are NaN/empty", "WARNING")
+        plt.close(fig)
+        return
     
     # Handle None values for max_depth
     if param_name == 'max_depth':
@@ -503,6 +537,10 @@ def plot_top_combinations(results_df, output_dir, top_n=10):
     fig, ax = plt.subplots(figsize=(14, 8))
     
     top_results = results_df.head(top_n).copy()
+    if top_results['mean_test_score'].dropna().empty:
+        log_step("Skipping top combinations plot: all CV scores are NaN/empty", "WARNING")
+        plt.close(fig)
+        return
     top_results['combination'] = [f"Rank {i+1}" for i in range(len(top_results))]
     
     # Plot bars with error bars
@@ -599,6 +637,11 @@ def plot_cv_scores_distribution(results_df, output_dir):
     """Plot distribution of CV scores across all parameter combinations."""
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 6))
     
+    if results_df['mean_test_score'].dropna().empty:
+        log_step("Skipping CV score distribution plot: all scores are NaN/empty", "WARNING")
+        plt.close(fig)
+        return
+
     # Histogram
     ax1.hist(results_df['mean_test_score'], bins=20, edgecolor='black', 
              alpha=0.7, color='skyblue')
@@ -962,7 +1005,7 @@ def train_model(data_dir='data/preprocessed',
 if __name__ == "__main__":
     # Train the model
     results = train_model(
-        n_iter=15,  # Start with 15 iterations for testing
-        cv=5,
-        random_state=42
+        n_iter=config.N_ITER_SEARCH,
+        cv=config.CV_FOLDS,
+        random_state=config.RANDOM_STATE
     )

@@ -715,7 +715,7 @@ def create_visualizations(multiclass_results, binary_results, error_analysis, la
     
     ax.set_ylabel('F1-Score', fontsize=12, fontweight='bold')
     ax.set_title('F1-Score Comparison (Averaging Methods)', fontsize=14, fontweight='bold')
-    ax.set_ylim([0.94, 1.0])
+    ax.set_ylim([0.5, 1.0])
     ax.grid(axis='y', alpha=0.3)
     
     plt.tight_layout()

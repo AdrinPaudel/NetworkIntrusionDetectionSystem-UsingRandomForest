@@ -1,24 +1,24 @@
 ================================================================================
                     MODULE 2: DATA EXPLORATION
                          STEP-BY-STEP LOG
-                    Generated: 2026-01-25 13:09:43
+                    Generated: 2026-01-26 10:02:17
 ================================================================================
 
 STEP 1: ANALYZE CLASS DISTRIBUTION
 --------------------------------------------------------------------------------
-• Identified 16 unique classes in Label column
+• Identified 15 unique classes in Label column
 • Majority class: Benign with 13,484,708 samples
-• Minority class: Label with 59 samples
-• Imbalance ratio: 228,554.37:1
+• Minority class: SQL Injection with 87 samples
+• Imbalance ratio: 154,996.64:1
 • Gini coefficient: 0.305
-• Classes requiring SMOTE (<1%): 9
+• Classes requiring SMOTE (<1%): 8
 ✓ Class distribution analysis completed
 
 STEP 2: CHECK MISSING VALUES (NaN)
 --------------------------------------------------------------------------------
 • Scanned all 80 columns for missing values
-• Total NaN cells found: 64,205 (0.005%)
-• Rows with at least one NaN: 59,780 (0.37%)
+• Total NaN cells found: 59,721 (0.005%)
+• Rows with at least one NaN: 59,721 (0.37%)
 • Problematic columns (>1% NaN): 0
 • Critical columns (>10% NaN): 0
 ✓ Missing value check completed
@@ -36,7 +36,7 @@ STEP 3: CHECK INFINITE VALUES (Inf)
 STEP 4: COUNT DUPLICATE ROWS
 --------------------------------------------------------------------------------
 • Checked for duplicate rows across all columns
-• Duplicate rows found: 433,253 (2.669%)
+• Duplicate rows found: 433,195 (2.669%)
 ✓ Duplicate count completed
 
 STEP 5: ANALYZE COLUMN-WISE DATA AVAILABILITY
@@ -99,7 +99,7 @@ STEP 10: GENERATE COMPREHENSIVE TEXT REPORT
 ================================================================================
                          EXPLORATION SUMMARY
 ================================================================================
-Dataset Size: 16,233,002 rows × 80 columns
+Dataset Size: 16,232,943 rows × 80 columns
 Memory Usage: 11.66 GB
 Numeric Features: 76
 Data Quality: 0.005% NaN, 2.669% duplicates

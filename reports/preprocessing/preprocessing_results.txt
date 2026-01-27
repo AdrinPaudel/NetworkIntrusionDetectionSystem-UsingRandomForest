@@ -1,14 +1,14 @@
 ================================================================================
                     DATA PREPROCESSING REPORT
                     CICIDS2018 Dataset
-               Generated: 2026-01-25 13:48:01
+               Generated: 2026-01-26 11:06:03
 ================================================================================
 
 1. DATA CLEANING
    ======================================================================
 
    Initial Dataset:
-     Rows: 16,233,002
+     Rows: 16,232,943
      Columns: 80
      Memory: 0.00 GB
 
@@ -30,7 +30,7 @@
      Rows: 11,979,405
      Columns: 79
      Memory: 0.00 GB
-     Total removed: 4,253,597 rows (26.203%)
+     Total removed: 4,253,538 rows (26.203%)
      Memory saved: 0.00 GB
 
    Quality Assessment: ⚠ ACCEPTABLE
@@ -41,8 +41,8 @@
 
    Consolidation Strategy: Merge attack subcategories into parent classes
      Original classes: 15
-     Consolidated classes: 7
-     Reduction: 8 classes
+     Consolidated classes: 6
+     Reduction: 9 classes
 
    Consolidation Mapping:
      • All DDoS variants → DDoS (LOIC-HTTP, LOIC-UDP, HOIC)
@@ -57,9 +57,8 @@
      DDoS                :      775,955 (  6.48%)
      DoS                 :      196,568 (  1.64%)
      Botnet              :      144,535 (  1.21%)
-     Infiltration        :      139,341 (  1.16%)
-     Brute Force         :       94,101 (  0.79%)
-     Web Attack          :          867 (  0.01%)
+     Infilteration       :      139,341 (  1.16%)
+     Brute Force         :       94,884 (  0.79%)
 
 3. CATEGORICAL ENCODING
    ======================================================================
@@ -75,14 +74,13 @@
      Total columns created: 3
 
    Target Label Encoding:
-     Classes encoded: 7
+     Classes encoded: 6
        0: Benign
        1: Botnet
        2: Brute Force
        3: DDoS
        4: DoS
-       5: Infiltration
-       6: Web Attack
+       5: Infilteration
 
    Columns After Encoding:
      Before: 79
@@ -99,10 +97,10 @@
      Random seed: 42
 
    Dataset Sizes:
-     Total samples: 11,979,405
+     Total samples: 11,979,321
      Features: 80
-     Training set: 9,583,524 samples
-     Test set: 2,395,881 samples
+     Training set: 9,583,456 samples
+     Test set: 2,395,865 samples
 
    Stratification Verification:
      Stratified: ✓ Yes
@@ -124,8 +122,8 @@
 
    Features Scaled:
      Number: 80
-     Training samples: 9,583,524
-     Test samples: 2,395,881
+     Training samples: 9,583,456
+     Test samples: 2,395,865
 
 6. CLASS IMBALANCE HANDLING (SMOTE)
    ======================================================================
@@ -137,31 +135,29 @@
      Reason: Simulates real-world deployment conditions
 
    Class Distribution Changes:
-     Classes oversampled: 2
+     Classes oversampled: 3
 
      Before SMOTE:
        Class 0:  8,502,430 ( 88.72%)
        Class 1:    115,628 (  1.21%)
-       Class 2:     75,281 (  0.79%)
+       Class 2:     75,907 (  0.79%)
        Class 3:    620,764 (  6.48%)
        Class 4:    157,254 (  1.64%)
        Class 5:    111,473 (  1.16%)
-       Class 6:        694 (  0.01%)
 
      After SMOTE:
-       Class 0:  8,502,430 ( 86.70%)
-       Class 1:    115,628 (  1.18%)
-       Class 2:     75,281 (  0.77%)
-       Class 3:    620,764 (  6.33%)
-       Class 4:    157,254 (  1.60%)
-       Class 5:    143,752 (  1.47%) [+32,279, 1.3x]
-       Class 6:    191,670 (  1.95%) [+190,976, 276.2x]
+       Class 0:  8,502,430 ( 87.12%)
+       Class 1:    143,751 (  1.47%) [+28,123, 1.2x]
+       Class 2:    191,669 (  1.96%) [+115,762, 2.5x]
+       Class 3:    620,764 (  6.36%)
+       Class 4:    157,254 (  1.61%)
+       Class 5:    143,751 (  1.47%) [+32,278, 1.3x]
 
    SMOTE Summary:
-     Samples before: 9,583,524
-     Samples after: 9,806,779
-     Synthetic samples: 223,255
-     Increase: 2.33%
+     Samples before: 9,583,456
+     Samples after: 9,759,619
+     Synthetic samples: 176,163
+     Increase: 1.84%
 
 ================================================================================
                          FINAL PREPROCESSED DATASET
@@ -178,14 +174,14 @@ Data Cleaning:
   ✓ Data loss: 26.203% (acceptable)
 
 Label Consolidation:
-  ✓ 15 classes → 7 classes
+  ✓ 15 classes → 6 classes
   ✓ Consistent naming applied
   ✓ No unmapped labels
 
 Encoding:
   ✓ All categorical features converted to numerical
   ✓ Protocol one-hot encoded (3 columns)
-  ✓ Target label encoded (7 classes)
+  ✓ Target label encoded (6 classes)
 
 Train-Test Split:
   ✓ 80:20 ratio achieved
@@ -211,6 +207,6 @@ Data Quality: Ready for model training
 Expected Performance: >96% macro F1-score (target)
 ================================================================================
 
-Report generated: 2026-01-25 13:48:01
+Report generated: 2026-01-26 11:06:03
 Module: Data Preprocessing (Module 3)
 Next step: Model Training (Module 4)

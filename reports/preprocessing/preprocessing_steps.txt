@@ -1,7 +1,7 @@
 ================================================================================
                   MODULE 3: DATA PREPROCESSING
                        DETAILED STEP-BY-STEP LOG
-               Generated: 2026-01-25 13:48:01
+               Generated: 2026-01-26 11:06:03
 ================================================================================
 
 This log provides a detailed chronological record of every preprocessing
@@ -16,21 +16,21 @@ STEP 1: DATA CLEANING
 Purpose: Remove poor quality data (NaN, Inf, duplicates) and useless columns
 
 [SUBSTEP 1.1] Initial State Assessment
-  • Dataset shape: 16,233,002 rows × 80 columns
+  • Dataset shape: 16,232,943 rows × 80 columns
   • Memory usage: 0.00 GB
   • Action: Assess data quality issues
 
 [SUBSTEP 1.2] Remove Useless Columns
   • Before: 80 columns
-  • Columns to remove: Flow ID, Src IP, Dst IP, Src Port, Timestamp
+  • Columns dropped: 0
   • Reason: Not useful for ML (identifiers, not features)
   • Action: df.drop(columns=[...], errors='ignore')
-  • After: 75 columns
+  • After: 80 columns
 
 [SUBSTEP 1.3] Remove Bad 'Label' Class
-  • Issue: Found 59 rows with label = 'Label' (misplaced header)
+  • Issue: Rows with label = 'Label' (misplaced header)
   • Action: df = df[df['Label'] != 'Label']
-  • Rows removed: 59
+  • Rows removed: 0
   • Validation: No 'Label' values in Label column
 
 [SUBSTEP 1.4] Identify NaN Values
@@ -39,10 +39,10 @@ Purpose: Remove poor quality data (NaN, Inf, duplicates) and useless columns
   • Decision: Remove all NaN rows (data loss acceptable)
 
 [SUBSTEP 1.5] Remove NaN Values
-  • Before: 16,233,002 rows
+  • Before: 16,232,943 rows
   • Action: df.dropna(inplace=True)
   • Removed: 0 rows
-  • After: 16,233,002 rows
+  • After: 16,232,943 rows
   • Validation: df.isna().sum().sum() == 0 ✓
 
 [SUBSTEP 1.6] Identify Infinite Values
@@ -51,10 +51,10 @@ Purpose: Remove poor quality data (NaN, Inf, duplicates) and useless columns
   • Decision: Remove all Inf rows (data loss acceptable)
 
 [SUBSTEP 1.7] Remove Infinite Values
-  • Before: 16,233,002 rows
+  • Before: 16,232,943 rows
   • Action: df = df[~df.isin([np.inf, -np.inf]).any(axis=1)]
   • Removed: 0 rows
-  • After: 11,979,405 rows
+  • After: 16,232,943 rows
   • Validation: np.isinf(df.select_dtypes(include=[np.number])).sum().sum() == 0 ✓
 
 [SUBSTEP 1.8] Identify Duplicate Rows
@@ -62,16 +62,16 @@ Purpose: Remove poor quality data (NaN, Inf, duplicates) and useless columns
   • Decision: Remove all duplicates (keep first occurrence)
 
 [SUBSTEP 1.9] Remove Duplicate Rows
-  • Before: 11,979,405 rows
+  • Before: 16,232,943 rows
   • Action: df.drop_duplicates(inplace=True)
   • Removed: 0 rows
   • After: 11,979,405 rows
   • Validation: df.duplicated().sum() == 0 ✓
 
 [SUBSTEP 1.10] Final Cleaning Summary
-  • Initial rows: 16,233,002
+  • Initial rows: 16,232,943
   • Final rows: 11,979,405
-  • Total removed: 4,253,597 (26.203%)
+  • Total removed: 4,253,538 (26.203%)
   • Memory saved: 0.00 GB
   • Quality: ✓ ACCEPTABLE
   • Checkpoint: Saved to cleaned_data.parquet
@@ -114,18 +114,22 @@ Purpose: Merge attack subcategories into parent classes (15 → 8)
 [SUBSTEP 2.3] Apply Label Mapping
   • Action: df['Label'] = df['Label'].map(config.LABEL_MAPPING).fillna(df['Label'])
   • Before: 15 classes
-  • After: 7 classes
-  • Reduction: 8 classes (53.3%)
+  • Mapped to: 6 classes (includes __DROP__)
 
-[SUBSTEP 2.4] Verify Consolidated Labels
+[SUBSTEP 2.4] Remove Rows Marked for Dropping
+  • Rows marked __DROP__ (e.g., SQL Injection): 84
+  • Action: df = df[df['Label'] != '__DROP__']
+  • Removed: 84 rows
+  • After: 5 classes (final)
+
+[SUBSTEP 2.5] Verify Consolidated Labels
   • Final distribution:
       Benign              : 10,628,038 (88.72%)
       DDoS                :    775,955 ( 6.48%)
       DoS                 :    196,568 ( 1.64%)
       Botnet              :    144,535 ( 1.21%)
-      Infiltration        :    139,341 ( 1.16%)
-      Brute Force         :     94,101 ( 0.79%)
-      Web Attack          :        867 ( 0.01%)
+      Infilteration       :    139,341 ( 1.16%)
+      Brute Force         :     94,884 ( 0.79%)
   • Validation: All labels mapped correctly ✓
 
 STEP 3: CATEGORICAL ENCODING
@@ -154,15 +158,14 @@ Purpose: Convert categorical features to numerical (required for ML)
   • Column: Label
   • Method: Label encoding (string → integer)
   • Action: LabelEncoder().fit_transform(df['Label'])
-  • Classes: 7
+  • Classes: 6
   • Mapping:
       0 ← Benign
       1 ← Botnet
       2 ← Brute Force
       3 ← DDoS
       4 ← DoS
-      5 ← Infiltration
-      6 ← Web Attack
+      5 ← Infilteration
   • Validation: All classes encoded ✓
 
 [SUBSTEP 3.4] Verify No Categorical Columns Remain
@@ -179,7 +182,7 @@ Purpose: Split dataset for training and testing (maintain class proportions)
   • Features (X): All columns except Label
   • Labels (y): Label column
   • Feature count: 80
-  • Total samples: 11,979,405
+  • Total samples: 11,979,321
 
 [SUBSTEP 4.2] Configure Split Parameters
   • Test size: 20% (0.2)
@@ -188,8 +191,8 @@ Purpose: Split dataset for training and testing (maintain class proportions)
 
 [SUBSTEP 4.3] Perform Stratified Split
   • Action: train_test_split(X, y, test_size=0.2, stratify=y, random_state=42)
-  • Training set: 9,583,524 samples (80.0%)
-  • Test set: 2,395,881 samples (20.0%)
+  • Training set: 9,583,456 samples (80.0%)
+  • Test set: 2,395,865 samples (20.0%)
 
 [SUBSTEP 4.4] Verify Stratification
   • Method: Compare class distributions in train vs test
@@ -212,7 +215,7 @@ Purpose: Normalize features using StandardScaler (mean=0, std=1)
 
 [SUBSTEP 5.2] Fit Scaler on Training Data ONLY
   • Action: scaler.fit(X_train)
-  • Training samples: 9,583,524
+  • Training samples: 9,583,456
   • Features: 80
   • CRITICAL: Scaler learns statistics from TRAINING data ONLY
   • Purpose: Prevent data leakage (test data must not influence scaler)
@@ -220,13 +223,13 @@ Purpose: Normalize features using StandardScaler (mean=0, std=1)
 [SUBSTEP 5.3] Transform Training Data
   • Action: X_train_scaled = scaler.transform(X_train)
   • Method: Apply learned mean/std from Step 5.2
-  • Shape: (9583524, 80)
+  • Shape: (9583456, 80)
   • Validation: Mean ≈ 0, Std ≈ 1 ✓
 
 [SUBSTEP 5.4] Transform Test Data
   • Action: X_test_scaled = scaler.transform(X_test)
   • Method: Apply TRAINING statistics (not test statistics)
-  • Shape: (2395881, 80)
+  • Shape: (2395865, 80)
   • CRITICAL: Test data did NOT influence scaler
   • Result: No data leakage ✓
 
@@ -241,40 +244,38 @@ STEP 6: CLASS IMBALANCE HANDLING (SMOTE)
 Purpose: Balance minority classes using synthetic oversampling
 
 [SUBSTEP 6.1] Analyze Class Imbalance
-  • Training samples: 9,583,524
-  • Classes: 7
+  • Training samples: 9,583,456
+  • Classes: 6
   • Distribution:
       Class 0:  8,502,430 (88.72%)
       Class 1:    115,628 ( 1.21%)
-      Class 2:     75,281 ( 0.79%)
+      Class 2:     75,907 ( 0.79%)
       Class 3:    620,764 ( 6.48%)
       Class 4:    157,254 ( 1.64%)
       Class 5:    111,473 ( 1.16%)
-      Class 6:        694 ( 0.01%)
 
 [SUBSTEP 6.2] Configure SMOTE Parameters
   • Strategy: Bring minorities to 3% of dataset (moderate)
   • k_neighbors: 5
   • Random state: 42
-  • Classes to oversample: 2
+  • Classes to oversample: 3
   • CRITICAL: Apply to TRAINING data ONLY (test remains imbalanced)
 
 [SUBSTEP 6.3] Apply SMOTE
   • Action: X_train_smoted, y_train_smoted = SMOTE(...).fit_resample(X_train, y_train)
-  • Before: 9,583,524 samples
-  • After: 9,806,779 samples
-  • Synthetic samples: 223,255
+  • Before: 9,583,456 samples
+  • After: 9,759,619 samples
+  • Synthetic samples: 176,163
   • Processing time: ~15-20 minutes (expected)
 
 [SUBSTEP 6.4] Verify SMOTE Results
   • Final distribution:
-      Class 0:  8,502,430 (86.70%)
-      Class 1:    115,628 ( 1.18%)
-      Class 2:     75,281 ( 0.77%)
-      Class 3:    620,764 ( 6.33%)
-      Class 4:    157,254 ( 1.60%)
-      Class 5:    143,752 ( 1.47%) [+32,279, 1.3x]
-      Class 6:    191,670 ( 1.95%) [+190,976, 276.2x]
+      Class 0:  8,502,430 (87.12%)
+      Class 1:    143,751 ( 1.47%) [+28,123, 1.2x]
+      Class 2:    191,669 ( 1.96%) [+115,762, 2.5x]
+      Class 3:    620,764 ( 6.36%)
+      Class 4:    157,254 ( 1.61%)
+      Class 5:    143,751 ( 1.47%) [+32,278, 1.3x]
   • Validation: Minority classes increased ✓
   • Checkpoint: Saved to train_scaled_smoted.parquet
 
@@ -288,10 +289,10 @@ Models Saved: 1
 Reports Generated: 2
 
 Final Dataset Ready for Training:
-  • Training: 9,806,779 samples
-  • Test: 2,395,881 samples
+  • Training: 9,759,619 samples
+  • Test: 2,395,865 samples
   • Features: 80
-  • Classes: 7
+  • Classes: 6
 
 ================================================================================
 Next Module: Model Training (Module 4)

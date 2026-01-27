@@ -122,31 +122,39 @@ def load_all_csv_files(csv_files, parallel=True, max_workers=None):
     log_message(f"Loading {len(csv_files)} CSV files...", level="STEP")
     
     if parallel and len(csv_files) > 1:
-        # Use parallel loading
+        # Use parallel loading with smart scheduling (larger files first)
         if max_workers is None:
             max_workers = min(len(csv_files), os.cpu_count() or 4)
         
         log_message(f"Using parallel loading with {max_workers} workers", level="INFO")
         print()
         
-        dataframes = [None] * len(csv_files)  # Preserve order
+        # Sort files by size (descending) so larger files get loaded first
+        # This improves overall loading time with ThreadPoolExecutor
+        csv_files_with_sizes = [(f, os.path.getsize(f)) for f in csv_files]
+        csv_files_sorted = [f[0] for f in sorted(csv_files_with_sizes, key=lambda x: x[1], reverse=True)]
+        
+        # Create mapping from sorted position to original position (for result ordering)
+        index_mapping = {i: csv_files.index(f) for i, f in enumerate(csv_files_sorted)}
+        
+        dataframes = [None] * len(csv_files)  # Preserve original order
         
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
-            # Submit all tasks
+            # Submit all tasks with larger files first
             future_to_index = {
-                executor.submit(load_single_csv, filepath): i 
-                for i, filepath in enumerate(csv_files)
+                executor.submit(load_single_csv, filepath): index_mapping[i]
+                for i, filepath in enumerate(csv_files_sorted)
             }
             
             # Collect results as they complete
             for future in as_completed(future_to_index):
-                index = future_to_index[future]
+                original_index = future_to_index[future]
                 try:
                     df = future.result()
-                    dataframes[index] = df
-                    log_message(f"[{index + 1}/{len(csv_files)}] Completed", level="INFO")
+                    dataframes[original_index] = df
+                    log_message(f"[{original_index + 1}/{len(csv_files)}] Completed", level="INFO")
                 except Exception as e:
-                    log_message(f"Error loading file {index + 1}: {str(e)}", level="ERROR")
+                    log_message(f"Error loading file {original_index + 1}: {str(e)}", level="ERROR")
                     raise
         print()
     else:
@@ -211,6 +219,20 @@ def validate_data(df):
         )
     
     log_message(f"Label column found: '{label_col}'", level="SUCCESS")
+    
+    # Remove rows where Label == 'Label' (misplaced header rows)
+    # Use memory-efficient approach to avoid "Killed" error
+    log_message("Removing rows with Label == 'Label' (misplaced headers)...", level="SUBSTEP")
+    
+    bad_label_count = (df[label_col] == 'Label').sum()
+    
+    if bad_label_count > 0:
+        # Memory-efficient: use query() to avoid creating large boolean mask
+        df = df.query(f"`{label_col}` != 'Label'").reset_index(drop=True)
+        log_message(f"Removed {format_number(bad_label_count)} rows with misplaced headers", level="INFO")
+    else:
+        log_message("No misplaced header rows found", level="INFO")
+    print()
     
     # Find Protocol column (optional)
     protocol_col = None

@@ -1,0 +1,117 @@
+(venv) paudeladrin@instance-20260123-213323:~/Nids$ python main.py --module 2
+[2026-01-26 09:51:43] [SUCCESS] [SETUP] All directories created/verified
+
+[2026-01-26 09:51:43] [INFO] ✓ Module 1 checkpoint found. Loading from checkpoint...
+[2026-01-26 09:51:50] [SUCCESS] ✓ Loaded Module 1 checkpoint (skipping data loading)
+
+[2026-01-26 09:51:50] [INFO] Starting Module 2: Data Exploration
+
+================================================================================
+  MODULE 2: DATA EXPLORATION
+================================================================================
+
+[2026-01-26 09:51:50] [STEP] Analyzing class distribution...
+[2026-01-26 09:51:50] [INFO] Found 15 unique classes
+[2026-01-26 09:51:50] [INFO] Majority class: Benign (13,484,708 samples)
+[2026-01-26 09:51:50] [INFO] Minority class: SQL Injection (87 samples)
+[2026-01-26 09:51:50] [INFO] Imbalance ratio: 154,996.64:1
+[2026-01-26 09:51:50] [INFO] Gini coefficient: 0.305
+[2026-01-26 09:51:50] [INFO] Classes requiring SMOTE (<1%): 8
+
+[2026-01-26 09:51:50] [STEP] Analyzing label consolidation impact...
+[2026-01-26 09:51:50] [INFO] BEFORE Consolidation:
+[2026-01-26 09:51:50] [INFO]   Classes: 15
+[2026-01-26 09:51:50] [INFO]   Gini Coefficient: 0.3053
+[2026-01-26 09:51:50] [INFO]   Majority class: Benign (13,484,708 samples, 83.07%)
+[2026-01-26 09:51:50] [INFO]   Minority class: SQL Injection (87 samples, 0.00%)
+[2026-01-26 09:51:50] [INFO]   Imbalance ratio: 154996.64:1
+
+[2026-01-26 09:52:25] [INFO] AFTER Consolidation:
+[2026-01-26 09:52:25] [INFO]   Classes: 6
+[2026-01-26 09:52:25] [INFO]   Gini Coefficient: 0.3013
+[2026-01-26 09:52:25] [INFO]   Majority class: Benign (13,484,708 samples, 83.07%)
+[2026-01-26 09:52:25] [INFO]   Minority class: Infilteration (161,934 samples, 1.00%)
+[2026-01-26 09:52:25] [INFO]   Imbalance ratio: 83.27:1
+
+[2026-01-26 09:52:25] [INFO] Consolidation Impact:
+[2026-01-26 09:52:25] [INFO]   Gini Improvement: +1.32%
+[2026-01-26 09:52:25] [INFO]   Classes Reduced: 9 (15 → 6)
+[2026-01-26 09:52:25] [INFO]   Rows Removed (SQL Injection, etc): 87 (0.00%)
+
+[2026-01-26 09:52:26] [SUCCESS] Saved figure: consolidation_bar_before.png
+[2026-01-26 09:52:26] [SUCCESS] ✓ Saved: consolidation_bar_before.png
+[2026-01-26 09:52:27] [SUCCESS] Saved figure: consolidation_bar_after.png
+[2026-01-26 09:52:27] [SUCCESS] ✓ Saved: consolidation_bar_after.png
+[2026-01-26 09:52:28] [SUCCESS] Saved figure: consolidation_pie_before.png
+[2026-01-26 09:52:28] [SUCCESS] ✓ Saved: consolidation_pie_before.png
+[2026-01-26 09:52:29] [SUCCESS] Saved figure: consolidation_pie_after.png
+[2026-01-26 09:52:29] [SUCCESS] ✓ Saved: consolidation_pie_after.png
+
+[2026-01-26 09:52:29] [STEP] Checking for missing values (NaN)...
+[2026-01-26 09:52:43] [INFO] Total NaN cells: 59,721 (0.005%)
+[2026-01-26 09:52:43] [INFO] Columns with NaN: 1/80 (1.2%)
+[2026-01-26 09:52:43] [INFO] Rows with ANY NaN: 59,721 (0.37%)
+[2026-01-26 09:52:43] [INFO] NaN count distribution (breakdown of above):
+[INFO]   Rows with EXACTLY 1 NaN(s): 59,721 (0.368%)
+
+[2026-01-26 09:52:43] [STEP] Checking for infinite values (Inf)...
+[2026-01-26 09:52:47] [INFO] Inf count distribution (breakdown of above):
+[INFO]   Rows with EXACTLY 1 Inf(s): 59,721 (0.368%)
+[INFO]   Rows with EXACTLY 2 Inf(s): 36,039 (0.222%)
+[2026-01-26 09:52:47] [INFO] Total Inf cells: 131,799
+[2026-01-26 09:52:47] [INFO] Columns with Inf: 2/76 numeric (2.5%)
+[2026-01-26 09:52:47] [INFO] Rows with Inf: 95,760 (0.59%)
+
+[2026-01-26 09:52:47] [STEP] Counting duplicate rows...
+[2026-01-26 09:55:39] [INFO] Duplicate rows: 433,195 (2.669%)
+
+[2026-01-26 09:55:39] [STEP] Analyzing column-wise data availability...
+[2026-01-26 09:55:46] [INFO] Analyzed 80 columns
+[2026-01-26 09:55:46] [INFO] All columns have <10% missing data
+
+[2026-01-26 09:55:46] [STEP] Calculating feature correlations (top 30 features)...
+[2026-01-26 09:55:46] [INFO] Computing correlation matrix for 76 features...
+/home/paudeladrin/Nids/venv/lib/python3.11/site-packages/pandas/core/nanops.py:1020: RuntimeWarning: invalid value encountered in subtract
+  sqr = _ensure_numeric((avg - values) ** 2)
+[2026-01-26 10:00:18] [INFO] Identified top 30 features by variance
+[2026-01-26 10:00:18] [INFO] Found 34 highly correlated pairs (|r| > 0.9)
+
+[2026-01-26 10:00:18] [STEP] Generating descriptive statistics...
+/home/paudeladrin/Nids/venv/lib/python3.11/site-packages/pandas/core/nanops.py:1020: RuntimeWarning: invalid value encountered in subtract
+  sqr = _ensure_numeric((avg - values) ** 2)
+/home/paudeladrin/Nids/venv/lib/python3.11/site-packages/pandas/core/nanops.py:1020: RuntimeWarning: invalid value encountered in subtract
+  sqr = _ensure_numeric((avg - values) ** 2)
+/home/paudeladrin/Nids/venv/lib/python3.11/site-packages/pandas/core/nanops.py:1263: RuntimeWarning: invalid value encountered in subtract
+  adjusted = values - mean
+/home/paudeladrin/Nids/venv/lib/python3.11/site-packages/pandas/core/nanops.py:1352: RuntimeWarning: invalid value encountered in subtract
+  adjusted = values - mean
+[2026-01-26 10:02:01] [SUCCESS] Calculated statistics for 76 features
+
+[2026-01-26 10:02:01] [STEP] Analyzing data types and memory usage...
+[2026-01-26 10:02:11] [INFO] Total memory: 11.66 GB
+[2026-01-26 10:02:11] [INFO] Memory per row: 0.75 KB
+
+[2026-01-26 10:02:11] [STEP] Creating visualizations...
+[2026-01-26 10:02:11] [INFO] Creating class distribution chart...
+[2026-01-26 10:02:12] [SUCCESS] Saved figure: class_distribution.png
+[2026-01-26 10:02:12] [INFO] Creating class imbalance log-scale chart...
+[2026-01-26 10:02:13] [SUCCESS] Saved figure: class_imbalance_log_scale.png
+[2026-01-26 10:02:13] [INFO] Creating high-resolution correlation heatmap...
+[2026-01-26 10:02:16] [INFO] Creating missing data summary chart...
+[2026-01-26 10:02:17] [SUCCESS] Saved figure: missing_data_summary.png
+[2026-01-26 10:02:17] [INFO] Creating memory usage chart with legend table...
+[2026-01-26 10:02:17] [SUCCESS] Saved figure: data_types_memory.png
+
+[2026-01-26 10:02:17] [STEP] Generating comprehensive text report...
+[2026-01-26 10:02:17] [SUCCESS] Saved report: exploration_results.txt
+[2026-01-26 10:02:17] [INFO] Generating step-by-step execution log...
+[2026-01-26 10:02:17] [SUCCESS] Saved report: exploration_steps.txt
+[2026-01-26 10:02:17] [SUCCESS]   ✓ Saved step-by-step log
+
+[2026-01-26 10:02:17] [SUCCESS] Module 2 completed successfully!
+[2026-01-26 10:02:17] [SUCCESS] All reports saved to: /home/paudeladrin/Nids/reports/exploration
+
+
+[2026-01-26 10:02:17] [SUCCESS] Requested modules completed!
+
+(venv) paudeladrin@instance-20260123-213323:~/Nids$ 

@@ -264,6 +264,18 @@ def consolidate_labels(df, label_col):
     # Apply mapping
     df[label_col] = df[label_col].map(config.LABEL_MAPPING).fillna(df[label_col])
     
+    # Remove rows marked for dropping (e.g., SQL Injection)
+    rows_before_drop = len(df)
+    drop_mask = df[label_col] == '__DROP__'
+    n_to_drop = drop_mask.sum()
+    
+    if n_to_drop > 0:
+        log_message(f"Removing {format_number(n_to_drop)} rows marked as '__DROP__' (e.g., SQL Injection)", level="INFO")
+        df = df[~drop_mask].copy()
+        log_message(f"✓ Removed {format_number(n_to_drop)} rows", level="SUCCESS")
+        log_message(f"Remaining: {format_number(len(df))} rows", level="INFO")
+        print()
+    
     # New labels
     consolidated_labels = df[label_col].value_counts().sort_index()
     n_consolidated = len(consolidated_labels)
@@ -283,7 +295,8 @@ def consolidate_labels(df, label_col):
         'original_classes': n_original,
         'consolidated_classes': n_consolidated,
         'original_distribution': original_labels.to_dict(),
-        'consolidated_distribution': consolidated_labels.to_dict()
+        'consolidated_distribution': consolidated_labels.to_dict(),
+        'dropped_rows': n_to_drop if n_to_drop > 0 else 0
     }
     
     return df, consolidation_stats
@@ -1235,32 +1248,37 @@ def plot_cleaning_summary(cleaning_stats, output_dir):
     fig, ax = plt.subplots(figsize=(12, 6))
     
     # Data for waterfall chart
-    steps = ['Initial', 'After NaN\nRemoval', 'After Inf\nRemoval', 'After Duplicate\nRemoval', 'Final']
+    initial = cleaning_stats.get('initial_rows', 0)
+    bad_label = cleaning_stats.get('bad_label_rows', 0)
+    nan_rows = cleaning_stats.get('nan_rows', 0)
+    inf_rows = cleaning_stats.get('inf_rows', 0)
+    dup_rows = cleaning_stats.get('duplicate_rows', 0)
+    
+    steps = ['Initial', 'After NaN\nRemoval', 'After Inf\nRemoval', 'After Duplicate\nRemoval']
     values = [
-        cleaning_stats.get('initial_rows', 0),
-        cleaning_stats.get('initial_rows', 0) - cleaning_stats.get('nan_rows', 0),
-        cleaning_stats.get('initial_rows', 0) - cleaning_stats.get('nan_rows', 0) - cleaning_stats.get('inf_rows', 0),
-        cleaning_stats.get('final_rows', 0),
+        initial - bad_label,  # After removing bad 'Label' rows (done before NaN)
+        initial - bad_label - nan_rows,
+        initial - bad_label - nan_rows - inf_rows,
         cleaning_stats.get('final_rows', 0)
     ]
     
-    colors = ['#3498db', '#2ecc71', '#2ecc71', '#2ecc71', '#27ae60']
+    colors = ['#3498db', '#2ecc71', '#2ecc71', '#27ae60']
     
     bars = ax.bar(steps, values, color=colors, edgecolor='black', linewidth=1.5)
     
     # Add value labels on bars
+    initial_for_pct = initial - bad_label
     for i, (bar, val) in enumerate(zip(bars, values)):
         height = bar.get_height()
         ax.text(bar.get_x() + bar.get_width()/2., height,
-                f'{val:,}\n({val/cleaning_stats.get("initial_rows", 1)*100:.1f}%)',
+                f'{val:,}\n({val/initial_for_pct*100:.1f}%)',
                 ha='center', va='bottom', fontsize=10, fontweight='bold')
     
     # Add removal annotations
     removed_texts = [
-        '',
-        f'-{cleaning_stats.get("nan_rows", 0):,}\nNaN rows',
-        f'-{cleaning_stats.get("inf_rows", 0):,}\nInf rows',
-        f'-{cleaning_stats.get("duplicate_rows", 0):,}\nDuplicates',
+        f'-{nan_rows:,}\nNaN rows',
+        f'-{inf_rows:,}\nInf rows',
+        f'-{dup_rows:,}\nDuplicates',
         ''
     ]
     
@@ -1274,7 +1292,7 @@ def plot_cleaning_summary(cleaning_stats, output_dir):
     ax.set_ylabel('Number of Rows', fontsize=12, fontweight='bold')
     ax.set_title('Data Cleaning Process: Rows at Each Stage', fontsize=14, fontweight='bold', pad=20)
     ax.grid(axis='y', alpha=0.3, linestyle='--')
-    ax.set_ylim(0, cleaning_stats.get('initial_rows', 0) * 1.15)
+    ax.set_ylim(0, (initial - bad_label) * 1.15)
     
     plt.tight_layout()
     save_figure(fig, os.path.join(output_dir, 'cleaning_summary.png'))
@@ -1461,8 +1479,9 @@ def plot_smote_comparison(smote_stats, output_dir):
     ax1.grid(axis='y', alpha=0.3, linestyle='--')
     ax1.set_ylim(0, max_count * 1.2)
     
-    # Add imbalance annotation
-    imbalance_before = max(counts_before) / min(counts_before)
+    # Add imbalance annotation (exclude __DROP__ class with near-zero count if present)
+    valid_counts_before = [c for c in counts_before if c > 100]  # Exclude tiny classes like __DROP__
+    imbalance_before = max(valid_counts_before) / min(valid_counts_before) if valid_counts_before else 1
     ax1.text(0.98, 0.98, f'Imbalance:\n{imbalance_before:.0f}:1',
             transform=ax1.transAxes, ha='right', va='top',
             fontsize=11, fontweight='bold',
@@ -1497,8 +1516,9 @@ def plot_smote_comparison(smote_stats, output_dir):
     ax2.grid(axis='y', alpha=0.3, linestyle='--')
     ax2.set_ylim(0, max_count * 1.2)
     
-    # Add balance improvement annotation
-    imbalance_after = max(counts_after) / min(counts_after)
+    # Add balance improvement annotation (exclude __DROP__ class with near-zero count if present)
+    valid_counts_after = [c for c in counts_after if c > 100]  # Exclude tiny classes like __DROP__
+    imbalance_after = max(valid_counts_after) / min(valid_counts_after) if valid_counts_after else 1
     improvement = imbalance_before / imbalance_after
     ax2.text(0.98, 0.98, f'Imbalance:\n{imbalance_after:.1f}:1\n({improvement:.0f}x better!)',
             transform=ax2.transAxes, ha='right', va='top',
@@ -1987,16 +2007,16 @@ def generate_preprocessing_steps_log(all_stats, output_dir):
         
         lines.append(f"[SUBSTEP 1.2] Remove Useless Columns")
         lines.append(f"  • Before: {clean.get('initial_cols', 0)} columns")
-        lines.append(f"  • Columns to remove: Flow ID, Src IP, Dst IP, Src Port, Timestamp")
+        lines.append(f"  • Columns dropped: {clean.get('useless_columns_count', 0)}")
         lines.append(f"  • Reason: Not useful for ML (identifiers, not features)")
         lines.append(f"  • Action: df.drop(columns=[...], errors='ignore')")
-        lines.append(f"  • After: {clean.get('initial_cols', 0) - 5} columns")
+        lines.append(f"  • After: {clean.get('initial_cols', 0) - clean.get('useless_columns_count', 0)} columns")
         lines.append("")
         
         lines.append(f"[SUBSTEP 1.3] Remove Bad 'Label' Class")
-        lines.append(f"  • Issue: Found 59 rows with label = 'Label' (misplaced header)")
+        lines.append(f"  • Issue: Rows with label = 'Label' (misplaced header)")
         lines.append(f"  • Action: df = df[df['Label'] != 'Label']")
-        lines.append(f"  • Rows removed: 59")
+        lines.append(f"  • Rows removed: {clean.get('bad_label_rows', 0)}")
         lines.append(f"  • Validation: No 'Label' values in Label column")
         lines.append("")
         
@@ -2007,10 +2027,11 @@ def generate_preprocessing_steps_log(all_stats, output_dir):
         lines.append("")
         
         lines.append(f"[SUBSTEP 1.5] Remove NaN Values")
-        lines.append(f"  • Before: {format_number(clean.get('initial_rows', 0))} rows")
+        rows_after_bad_label = clean.get('initial_rows', 0) - clean.get('bad_label_rows', 0)
+        lines.append(f"  • Before: {format_number(rows_after_bad_label)} rows")
         lines.append(f"  • Action: df.dropna(inplace=True)")
         lines.append(f"  • Removed: {format_number(clean.get('nan_rows', 0))} rows")
-        lines.append(f"  • After: {format_number(clean.get('initial_rows', 0) - clean.get('nan_rows', 0))} rows")
+        lines.append(f"  • After: {format_number(rows_after_bad_label - clean.get('nan_rows', 0))} rows")
         lines.append(f"  • Validation: df.isna().sum().sum() == 0 ✓")
         lines.append("")
         
@@ -2021,10 +2042,12 @@ def generate_preprocessing_steps_log(all_stats, output_dir):
         lines.append("")
         
         lines.append(f"[SUBSTEP 1.7] Remove Infinite Values")
-        lines.append(f"  • Before: {format_number(clean.get('initial_rows', 0) - clean.get('nan_rows', 0))} rows")
+        rows_after_nan = clean.get('initial_rows', 0) - clean.get('bad_label_rows', 0) - clean.get('nan_rows', 0)
+        rows_after_inf = rows_after_nan - clean.get('inf_rows', 0)
+        lines.append(f"  • Before: {format_number(rows_after_nan)} rows")
         lines.append(f"  • Action: df = df[~df.isin([np.inf, -np.inf]).any(axis=1)]")
         lines.append(f"  • Removed: {format_number(clean.get('inf_rows', 0))} rows")
-        lines.append(f"  • After: {format_number(clean.get('final_rows', 0) + clean.get('duplicate_rows', 0))} rows")
+        lines.append(f"  • After: {format_number(rows_after_inf)} rows")
         lines.append(f"  • Validation: np.isinf(df.select_dtypes(include=[np.number])).sum().sum() == 0 ✓")
         lines.append("")
         
@@ -2034,7 +2057,8 @@ def generate_preprocessing_steps_log(all_stats, output_dir):
         lines.append("")
         
         lines.append(f"[SUBSTEP 1.9] Remove Duplicate Rows")
-        lines.append(f"  • Before: {format_number(clean.get('final_rows', 0) + clean.get('duplicate_rows', 0))} rows")
+        rows_before_dup = clean.get('initial_rows', 0) - clean.get('bad_label_rows', 0) - clean.get('nan_rows', 0) - clean.get('inf_rows', 0)
+        lines.append(f"  • Before: {format_number(rows_before_dup)} rows")
         lines.append(f"  • Action: df.drop_duplicates(inplace=True)")
         lines.append(f"  • Removed: {format_number(clean.get('duplicate_rows', 0))} rows")
         lines.append(f"  • After: {format_number(clean.get('final_rows', 0))} rows")
@@ -2084,11 +2108,19 @@ def generate_preprocessing_steps_log(all_stats, output_dir):
         lines.append(f"[SUBSTEP 2.3] Apply Label Mapping")
         lines.append(f"  • Action: df['Label'] = df['Label'].map(config.LABEL_MAPPING).fillna(df['Label'])")
         lines.append(f"  • Before: {consol.get('original_classes', 0)} classes")
-        lines.append(f"  • After: {consol.get('consolidated_classes', 0)} classes")
-        lines.append(f"  • Reduction: {consol.get('original_classes', 0) - consol.get('consolidated_classes', 0)} classes ({(consol.get('original_classes', 0) - consol.get('consolidated_classes', 0)) / consol.get('original_classes', 1) * 100:.1f}%)")
+        lines.append(f"  • Mapped to: {consol.get('consolidated_classes', 0)} classes (includes __DROP__)")
         lines.append("")
         
-        lines.append(f"[SUBSTEP 2.4] Verify Consolidated Labels")
+        dropped_rows = consol.get('dropped_rows', 0)
+        if dropped_rows > 0:
+            lines.append(f"[SUBSTEP 2.4] Remove Rows Marked for Dropping")
+            lines.append(f"  • Rows marked __DROP__ (e.g., SQL Injection): {format_number(dropped_rows)}")
+            lines.append(f"  • Action: df = df[df['Label'] != '__DROP__']")
+            lines.append(f"  • Removed: {format_number(dropped_rows)} rows")
+            lines.append(f"  • After: {consol.get('consolidated_classes', 0) - 1} classes (final)")
+            lines.append("")
+        
+        lines.append(f"[SUBSTEP 2.5] Verify Consolidated Labels")
         if 'consolidated_distribution' in consol:
             lines.append(f"  • Final distribution:")
             for label, count in sorted(consol['consolidated_distribution'].items(), key=lambda x: x[1], reverse=True):

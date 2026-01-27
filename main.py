@@ -185,9 +185,21 @@ Examples:
             
             elif module_num == 2:
                 if df is None:
-                    log_message("Module 2 requires Module 1 to run first. Running Module 1...", 
-                               level="INFO")
-                    df, label_col, protocol_col, load_stats = run_module_1()
+                    # Check if Module 1 checkpoint exists
+                    import os
+                    checkpoint_path = os.path.join(config.DATA_PREPROCESSED_DIR, 'module1_checkpoint.joblib')
+                    
+                    if os.path.exists(checkpoint_path):
+                        log_message("✓ Module 1 checkpoint found. Loading from checkpoint...", 
+                                   level="INFO")
+                        from src.data_loader import load_module1_checkpoint
+                        df, label_col, protocol_col, load_stats = load_module1_checkpoint()
+                    else:
+                        log_message("Module 1 checkpoint not found. Running Module 1...", 
+                                   level="INFO")
+                        df, label_col, protocol_col, load_stats = run_module_1()
+                    
+                    print()
                 
                 exploration_stats = run_module_2(df, label_col, protocol_col)
             
@@ -204,8 +216,20 @@ Examples:
                     if df is None:
                         log_message("Module 3 requires Module 1 data. Loading...", 
                                    level="INFO")
-                        df, label_col, protocol_col, load_stats = run_module_1()
-                        # Skip Module 2 - exploration not needed for preprocessing
+                        # Check if Module 1 checkpoint exists first
+                        import os
+                        checkpoint_path = os.path.join(config.DATA_PREPROCESSED_DIR, 'module1_checkpoint.joblib')
+                        
+                        if os.path.exists(checkpoint_path):
+                            log_message("✓ Module 1 checkpoint found. Loading from checkpoint...", 
+                                       level="INFO")
+                            from src.data_loader import load_module1_checkpoint
+                            df, label_col, protocol_col, load_stats = load_module1_checkpoint()
+                        else:
+                            log_message("Module 1 checkpoint not found. Running Module 1...", 
+                                       level="INFO")
+                            df, label_col, protocol_col, load_stats = run_module_1()
+                        print()
                 
                 preprocessing_result = run_module_3(df, label_col, protocol_col, resume_from=resume_from)
             

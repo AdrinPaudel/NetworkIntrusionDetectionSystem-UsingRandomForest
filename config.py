@@ -47,7 +47,15 @@ FIGURE_FORMAT = 'png'  # Image format
 # DATA PREPROCESSING SETTINGS
 # ============================================================
 
-# Label Consolidation Mapping (15 → 8 classes)
+# Label Consolidation Mapping (15 → 6 classes)
+# User requested mapping:
+# Benign → Benign
+# DDoS variants → DDoS
+# DoS variants → DoS
+# Brute Force variants (SSH, FTP, Web, XSS) → Brute Force
+# Botnet → Botnet
+# Infilteration → Infilteration (keep original)
+# SQL Injection → DROP
 LABEL_MAPPING = {
     # Benign
     'Benign': 'Benign',
@@ -70,27 +78,27 @@ LABEL_MAPPING = {
     'DoS Slowhttptest': 'DoS',
     'DoS slowloris': 'DoS',
     
-    # Brute Force variants → Brute Force
+    # Brute Force variants → Brute Force (including SSH, FTP, Web, XSS)
     'FTP-BruteForce': 'Brute Force',
     'FTP-Patator': 'Brute Force',
     'SSH-Bruteforce': 'Brute Force',
     'SSH-Patator': 'Brute Force',
-    
-    # Web Attack variants → Web Attack
-    'SQL Injection': 'Web Attack',
-    'Brute Force -Web': 'Web Attack',
-    'Brute Force -XSS': 'Web Attack',
+    'Brute Force -Web': 'Brute Force',
+    'Brute Force -XSS': 'Brute Force',
     
     # Botnet
     'Bot': 'Botnet',
     'Botnet': 'Botnet',
     
-    # Infiltration (fix typo in dataset)
-    'Infilteration': 'Infiltration',
-    'Infiltration': 'Infiltration',
+    # Infilteration (keep original name as user requested)
+    'Infilteration': 'Infilteration',
+    'Infiltration': 'Infilteration',
     
-    # Heartbleed
-    'Heartbleed': 'Heartbleed',
+    # SQL Injection → DROP (will be filtered out)
+    'SQL Injection': '__DROP__',
+    
+    # Heartbleed (if present)
+    'Heartbleed': '__DROP__',
 }
 
 # Train-test split
@@ -105,12 +113,19 @@ SCALER_TYPE = 'standard'  # 'standard' or 'minmax'
 APPLY_SMOTE = True  # Enabled for tiered oversampling strategy
 SMOTE_K_NEIGHBORS = 5
 SMOTE_STRATEGY = 'tiered'  # 'uniform' or 'tiered' (tiered = different targets per class)
-# Tiered targets for 7-class system (excluding Heartbleed)
+# Tiered targets for 6-class system after consolidation:
+# Classes: Benign, Botnet, Brute Force, DDoS, DoS, Infilteration
 SMOTE_TIERED_TARGETS = {
     # Format: class_index: target_percentage_of_train_set
-    # Benign (0), Botnet (1), Brute Force (2), DDoS (3), DoS (4) - no SMOTE needed
-    5: 0.015,  # Infiltration → 1.5% (harder to detect, needs more samples)
-    6: 0.020,  # Web Attack → 2.0% (very rare, needs substantial boost)
+    # Index 0: Benign (83.07%) - no SMOTE needed (majority class)
+    # Index 1: Botnet (1.76%) - needs oversampling
+    1: 0.015,  # Botnet → 1.5%
+    # Index 2: Brute Force (2.35%) - needs oversampling
+    2: 0.020,  # Brute Force → 2.0%
+    # Index 3: DDoS (7.79%) - likely no SMOTE needed (reasonable size)
+    # Index 4: DoS (4.03%) - likely no SMOTE needed
+    # Index 5: Infilteration (1.00%) - minority, likely needs oversampling
+    5: 0.015,  # Infilteration → 1.5%
 }
 SMOTE_TARGET_PERCENTAGE = 0.03  # Fallback for uniform strategy
 
@@ -139,8 +154,9 @@ RFE_TARGET_FEATURES_MAX = 45
 
 # Hyperparameter Tuning (RandomizedSearchCV)
 HYPERPARAMETER_TUNING = True
-N_ITER_SEARCH = 20  # FAST MODE: Reduced from 50 for quick training
-CV_FOLDS = 3  # Cross-validation folds (reduced from 5 for memory efficiency)
+N_ITER_SEARCH = 15  # Optimized for 16vCPU: 15 iterations × 3 folds = 45 total fits
+CV_FOLDS = 3  # Cross-validation folds (3 for memory efficiency)
+TUNING_SAMPLE_FRACTION = 0.2  # Sample 20% of training data for tuning to reduce peak RAM
 TUNING_SCORING = 'f1_macro'  # Optimization metric
 
 # Memory Management during Training
@@ -160,8 +176,8 @@ PARAM_DISTRIBUTIONS = {
 
 # Default hyperparameters (if tuning is skipped)
 DEFAULT_RF_PARAMS = {
-    'n_estimators': 300,
-    'max_depth': 30,
+    'n_estimators': 100,
+    'max_depth': 25,
     'min_samples_split': 5,
     'min_samples_leaf': 2,
     'max_features': 'sqrt',
@@ -188,14 +204,15 @@ ROC_MACRO_AVERAGE = True
 # SYSTEM SETTINGS
 # ============================================================
 
-# Parallel processing (64 vCPU / 416GB RAM system)
-# Using high but bounded parallelism to avoid oversubscription
-N_JOBS = 64          # For heavy fits (e.g., final RF training uses all logical CPUs)
-N_JOBS_LIGHT = 16    # For per-estimator parallelism during tuning/feature importance
-N_JOBS_CV = 4        # Concurrent CV folds during tuning (4 * 16 ≈ 64 logical threads)
+# Parallel processing (auto-scale across VM specs)
+# Use -1 to utilize all available cores for CV/final fits; keep RF per-fit single-threaded to avoid nested parallelism
+N_JOBS = -1          # Final training uses all logical CPUs
+N_JOBS_LIGHT = 1     # Per-estimator threads during tuning (prevents nested parallelism)
+N_JOBS_CV = -1       # CV workers use all logical CPUs (threading backend shares memory)
 
-# Memory settings (optimized for 416GB RAM)
-LOW_MEMORY = False  # We have plenty of RAM
+# Memory settings (optimized for 200GB RAM + 16vCPU)
+LOW_MEMORY = False  # 200GB is still substantial, but limited
+RF_MAX_SAMPLES = 0.5  # Cap per-tree bootstrap sample to 50% to lower memory
 
 # Logging
 VERBOSE = True  # Detailed console output
