@@ -1,17 +1,18 @@
 ================================================================================
-SIMULATION MINUTE REPORT - 20260129_0609
+SIMULATION MINUTE REPORT - 20260129_1703
 ================================================================================
-Generated: 2026-01-29T06:10:00.127264
+Generated: 2026-01-29T17:04:00.180716
 
 ALERT SUMMARY:
-  Total Flows:  46
-  RED (Attacks):    14 (30.4%)
-  YELLOW (Warn):     2 (4.3%)
-  GREEN (Safe):     30 (65.2%)
+  Total Flows:  298
+  RED (Attacks):    76 (25.5%)
+  YELLOW (Warn):     1 (0.3%)
+  GREEN (Safe):    221 (74.2%)
 
 ATTACK TYPES:
-  DDoS            8
-  DoS             4
-  Botnet          2
+  DDoS            48
+  Botnet          13
+  Brute Force     8
+  DoS             7
 
 ================================================================================

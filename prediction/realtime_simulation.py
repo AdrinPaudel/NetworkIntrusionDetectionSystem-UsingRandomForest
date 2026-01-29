@@ -12,6 +12,11 @@ import numpy as np
 from pathlib import Path
 from datetime import datetime
 import os
+import warnings
+
+# Suppress sklearn warnings for cleaner output
+warnings.filterwarnings('ignore', category=UserWarning, module='sklearn.*')
+warnings.filterwarnings('ignore', message='.*does not have valid feature names.*')
 
 from .predictor import NetworkPredictor
 from .predict_preprocess import PredictionPreprocessor

@@ -1,9 +1,9 @@
 ================================================================================
 SIMULATED MONITORING SESSION SUMMARY
 ================================================================================
-Generated: 2026-01-29T06:11:50.789034
-Duration: 120.2 seconds
-Session Directory: results\simulated_20260129_060950
+Generated: 2026-01-29T17:04:06.189060
+Duration: 124.2 seconds
+Session Directory: results\simulated_20260129_170201
 Source CSV: data\realtrafficsimul\realtraffic_for_prediction.csv
 
 STATISTICS:
@@ -11,12 +11,12 @@ STATISTICS:
   Total Analyzed:  0
 
 ALERT BREAKDOWN:
-  RED (Attacks):   151
-  YELLOW (Warn):   4
-  GREEN (Safe):    444
+  RED (Attacks):   156
+  YELLOW (Warn):   3
+  GREEN (Safe):    440
 
 FILES GENERATED:
-  Per-minute folders: results\simulated_20260129_060950/minute_*
+  Per-minute folders: results\simulated_20260129_170201/minute_*
   Each minute contains:
     - red.log (attacks only)
     - yellow.log (warnings only)

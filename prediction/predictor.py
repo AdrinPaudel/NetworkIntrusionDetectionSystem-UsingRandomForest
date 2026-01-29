@@ -8,6 +8,13 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 import logging
+import warnings
+
+# Suppress sklearn warnings for cleaner output
+warnings.filterwarnings('ignore', category=UserWarning, module='sklearn.*')
+warnings.filterwarnings('ignore', message='.*does not have valid feature names.*')
+
+from .threat_action_handler import handle_prediction
 
 # Setup logging
 logger = logging.getLogger(__name__)
@@ -105,7 +112,7 @@ class NetworkPredictor:
         
         is_attack = pred_class != 'Benign'
         
-        return {
+        result = {
             'prediction': pred_class,
             'confidence': confidence,
             'probabilities': probabilities,
@@ -113,6 +120,16 @@ class NetworkPredictor:
             'all_probabilities': dict(sorted(probabilities.items(), 
                                             key=lambda x: x[1], reverse=True))
         }
+        
+        # Trigger threat action handler if attack detected
+        if is_attack:
+            handle_prediction({
+                'Predicted_Class': pred_class,
+                'Confidence': confidence,
+                'Is_Attack': is_attack
+            })
+        
+        return result
     
     def predict_batch(self, data_df):
         """
@@ -195,6 +212,16 @@ class NetworkPredictor:
         
         result_df['Is_Attack'] = is_attacks
         result_df['Alert_Level'] = alert_levels
+        
+        # Trigger threat action handler for detected attacks
+        for idx, row in result_df.iterrows():
+            if row['Is_Attack']:
+                handle_prediction({
+                    'Predicted_Class': row['Predicted_Class'],
+                    'Confidence': row['Confidence'],
+                    'Is_Attack': True,
+                    'Alert_Level': row['Alert_Level']
+                })
         
         return result_df
     
