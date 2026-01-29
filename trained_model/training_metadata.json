@@ -1,0 +1,52 @@
+{
+  "training_date": "2026-01-27T00:16:39.712664",
+  "model_type": "RandomForestClassifier",
+  "n_classes": 6,
+  "class_names": [
+    "Benign",
+    "Botnet",
+    "Brute Force",
+    "DDoS",
+    "DoS",
+    "Infilteration"
+  ],
+  "hyperparameter_tuning": {
+    "n_iterations": 15,
+    "cv_folds": 3,
+    "best_cv_score": 0.8639625096912075,
+    "best_cv_std": 0.0010871818358842071,
+    "best_params": {
+      "n_estimators": 150,
+      "min_samples_split": 5,
+      "min_samples_leaf": 1,
+      "max_features": "sqrt",
+      "max_depth": 20,
+      "class_weight": null,
+      "bootstrap": true
+    },
+    "tuning_time_minutes": 26.61287755568822
+  },
+  "final_training": {
+    "training_time_minutes": 4.956732845306396,
+    "n_samples": 9759619,
+    "n_features": 45,
+    "n_estimators": 150,
+    "total_nodes": 2654654,
+    "avg_tree_depth": 20.0
+  },
+  "feature_importances": {
+    "top_10_features": [
+      "Dst Port",
+      "Fwd Seg Size Min",
+      "Init Fwd Win Byts",
+      "Fwd Header Len",
+      "Bwd Seg Size Avg",
+      "Bwd Pkt Len Max",
+      "TotLen Fwd Pkts",
+      "Bwd Header Len",
+      "TotLen Bwd Pkts",
+      "Bwd Pkt Len Std"
+    ],
+    "top_10_cumulative_importance": 0.3989186833226992
+  }
+}
