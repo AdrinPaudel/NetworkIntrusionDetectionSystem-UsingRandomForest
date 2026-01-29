@@ -1,0 +1,115 @@
+================================================================================
+                    MODULE 2: DATA EXPLORATION
+                         STEP-BY-STEP LOG
+                    Generated: 2026-01-26 10:02:17
+================================================================================
+
+STEP 1: ANALYZE CLASS DISTRIBUTION
+--------------------------------------------------------------------------------
+• Identified 15 unique classes in Label column
+• Majority class: Benign with 13,484,708 samples
+• Minority class: SQL Injection with 87 samples
+• Imbalance ratio: 154,996.64:1
+• Gini coefficient: 0.305
+• Classes requiring SMOTE (<1%): 8
+✓ Class distribution analysis completed
+
+STEP 2: CHECK MISSING VALUES (NaN)
+--------------------------------------------------------------------------------
+• Scanned all 80 columns for missing values
+• Total NaN cells found: 59,721 (0.005%)
+• Rows with at least one NaN: 59,721 (0.37%)
+• Problematic columns (>1% NaN): 0
+• Critical columns (>10% NaN): 0
+✓ Missing value check completed
+
+STEP 3: CHECK INFINITE VALUES (Inf)
+--------------------------------------------------------------------------------
+• Scanned all numeric columns for infinite values
+• Total Inf cells found: 131,799
+• Rows with at least one Inf: 95,760 (0.59%)
+• Affected columns: 2
+  - Flow Byts/s: 36,039 Inf values
+  - Flow Pkts/s: 95,760 Inf values
+✓ Infinite value check completed
+
+STEP 4: COUNT DUPLICATE ROWS
+--------------------------------------------------------------------------------
+• Checked for duplicate rows across all columns
+• Duplicate rows found: 433,195 (2.669%)
+✓ Duplicate count completed
+
+STEP 5: ANALYZE COLUMN-WISE DATA AVAILABILITY
+--------------------------------------------------------------------------------
+• Analyzed data availability for all 80 columns
+• Calculated non-null percentage for each column
+• Columns with >10% missing: 0
+✓ Column availability analysis completed
+
+STEP 6: CALCULATE FEATURE CORRELATIONS
+--------------------------------------------------------------------------------
+• Identified 76 numeric features
+• Selected top 30 features by variance for correlation analysis
+• Calculated 30×30 correlation matrix
+• Found 34 highly correlated pairs (|r| > 0.9)
+✓ Correlation analysis completed
+
+STEP 7: GENERATE DESCRIPTIVE STATISTICS
+--------------------------------------------------------------------------------
+• Calculated mean, std, min, max, percentiles for all numeric features
+• Generated statistics for 76 features
+✓ Descriptive statistics completed
+
+STEP 8: ANALYZE DATA TYPES AND MEMORY USAGE
+--------------------------------------------------------------------------------
+• Total dataset memory: 11.66 GB
+• Memory per row: 0.75 KB
+• Memory breakdown by data type:
+  - float64: 9.19 GB (78.9%)
+  - object: 1.82 GB (15.6%)
+  - str: 0.65 GB (5.5%)
+✓ Memory analysis completed
+
+STEP 9: CREATE VISUALIZATIONS
+--------------------------------------------------------------------------------
+• Generated class_distribution.png
+  - Vertical bar chart with class counts
+• Generated class_imbalance_log_scale.png
+  - Log scale chart to visualize extreme imbalance
+• Generated correlation_heatmap.png
+  - High-resolution 20×20 correlation matrix (DPI 150)
+• Generated missing_data_summary.png
+  - NaN and Inf values visualization
+• Generated data_types_memory.png
+  - Pie chart with side legend table
+✓ All visualizations created
+
+STEP 10: GENERATE COMPREHENSIVE TEXT REPORT
+--------------------------------------------------------------------------------
+• Created exploration_results.txt with:
+  - Dataset overview
+  - Class distribution details
+  - Data quality assessment
+  - Feature correlation analysis
+  - Column-wise data availability
+  - Memory usage breakdown
+  - Preprocessing recommendations
+✓ Report generation completed
+
+================================================================================
+                         EXPLORATION SUMMARY
+================================================================================
+Dataset Size: 16,232,943 rows × 80 columns
+Memory Usage: 11.66 GB
+Numeric Features: 76
+Data Quality: 0.005% NaN, 2.669% duplicates
+
+Next Step: Module 3 - Data Preprocessing
+  1. Remove NaN rows
+  2. Remove Inf rows
+  3. Remove duplicate rows
+  4. Consolidate labels (15 → 8 classes)
+  5. Scale features (StandardScaler)
+  6. Apply SMOTE for class imbalance
+  7. Feature selection with RFE
+================================================================================

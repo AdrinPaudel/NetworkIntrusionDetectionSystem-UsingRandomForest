@@ -1,0 +1,26 @@
+================================================================================
+MONITORING SESSION SUMMARY
+================================================================================
+Generated: 2026-01-29T06:13:59.760830
+Duration: 120.0 seconds
+Session Directory: results\realtime_20260129_061159
+
+STATISTICS:
+  Total Packets:   35722
+  Total Flows:     104
+  Total Analyzed:  0
+
+ALERT BREAKDOWN:
+  RED (Attacks):   0
+  YELLOW (Warn):   0
+  GREEN (Safe):    103
+
+FILES GENERATED:
+  Per-minute folders: results\realtime_20260129_061159/minute_*
+  Each minute contains:
+    - red.log (RED alerts only)
+    - yellow.log (YELLOW warnings only)
+    - full.log (ALL flows)
+    - report.txt (summary)
+
+================================================================================

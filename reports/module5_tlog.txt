@@ -1,0 +1,212 @@
+paudeladrin@instance-20260123-213323:~/Nids$ python3 main.py --module 5
+[2026-01-27 00:20:37] [SUCCESS] [SETUP] All directories created/verified
+
+[2026-01-27 00:20:37] [INFO] Starting Module 5: Model Testing
+[2026-01-27 00:20:37] [STEP] ================================================================================
+[2026-01-27 00:20:37] [STEP] MODULE 5: MODEL TESTING & EVALUATION
+[2026-01-27 00:20:37] [STEP] ================================================================================
+[2026-01-27 00:20:37] [INFO] 
+[2026-01-27 00:20:37] [STEP] Loading preprocessed data...
+[2026-01-27 00:20:37] [SUBSTEP] Loading trained model...
+[2026-01-27 00:20:38] [INFO] Model loaded: RandomForestClassifier
+[2026-01-27 00:20:38] [INFO] Number of trees: 150
+[2026-01-27 00:20:38] [SUBSTEP] Loading preprocessing objects...
+[2026-01-27 00:20:38] [INFO] Label classes: ['Benign', 'Botnet', 'Brute Force', 'DDoS', 'DoS', 'Infilteration']
+[2026-01-27 00:20:38] [SUBSTEP] Loading test data (original distribution)...
+[2026-01-27 00:20:38] [INFO] Test data: 2,395,865 samples, 45 features
+[2026-01-27 00:20:38] [INFO] Test set class distribution:
+[2026-01-27 00:20:38] [INFO]   0: Benign               - 2,125,608 (88.72%)
+[2026-01-27 00:20:38] [INFO]   1: Botnet               -   28,907 ( 1.21%)
+[2026-01-27 00:20:38] [INFO]   2: Brute Force          -   18,977 ( 0.79%)
+[2026-01-27 00:20:38] [INFO]   3: DDoS                 -  155,191 ( 6.48%)
+[2026-01-27 00:20:38] [INFO]   4: DoS                  -   39,314 ( 1.64%)
+[2026-01-27 00:20:38] [INFO]   5: Infilteration        -   27,868 ( 1.16%)
+[2026-01-27 00:20:38] [SUCCESS] Data loading completed in 1.1 seconds
+[2026-01-27 00:20:38] [INFO] 
+[2026-01-27 00:20:38] [STEP] Generating predictions on test set...
+[2026-01-27 00:20:38] [INFO] Test samples: 2,395,865
+[2026-01-27 00:20:38] [SUBSTEP] Predicting class labels...
+[2026-01-27 00:20:43] [SUCCESS] Predictions generated in 4.9 seconds
+[2026-01-27 00:20:43] [INFO] Inference speed: 493,284 samples/second
+[2026-01-27 00:20:43] [INFO] Average time per sample: 0.002 ms
+[2026-01-27 00:20:43] [SUBSTEP] Predicting probabilities...
+[2026-01-27 00:20:48] [SUCCESS] Probabilities generated in 4.7 seconds
+[2026-01-27 00:20:48] [INFO] Probability matrix shape: (2395865, 6)
+[2026-01-27 00:20:48] [INFO] Prediction confidence statistics:
+[2026-01-27 00:20:48] [INFO]   Mean: 0.9848
+[2026-01-27 00:20:48] [INFO]   Median: 0.9936
+[2026-01-27 00:20:48] [INFO]   Std: 0.0388
+[2026-01-27 00:20:48] [INFO]   Range: [0.4012, 1.0000]
+[2026-01-27 00:20:48] [INFO] Low confidence predictions (<0.5): 63 (0.003%)
+[2026-01-27 00:20:48] [INFO] 
+[2026-01-27 00:20:48] [STEP] ================================================================================
+[2026-01-27 00:20:48] [STEP] MULTICLASS EVALUATION (7-Class Classification)
+[2026-01-27 00:20:48] [STEP] ================================================================================
+[2026-01-27 00:20:48] [SUBSTEP] Generating confusion matrix...
+[2026-01-27 00:20:48] [INFO] Confusion matrix shape: (6, 6)
+[2026-01-27 00:20:48] [SUBSTEP] Calculating per-class metrics...
+[2026-01-27 00:20:49] [INFO] 
+[2026-01-27 00:20:49] [INFO] Per-Class Metrics:
+[2026-01-27 00:20:49] [INFO] Class Name           | Precision | Recall   | F1-Score | Support
+[2026-01-27 00:20:49] [INFO] ---------------------------------------------------------------------------
+[2026-01-27 00:20:49] [INFO] Benign               | 0.9886   | 0.9982  | 0.9934  | 2,125,608
+[2026-01-27 00:20:49] [INFO] Botnet               | 1.0000   | 0.9961  | 0.9980  |   28,907
+[2026-01-27 00:20:49] [INFO] Brute Force          | 0.9994   | 0.9957  | 0.9975  |   18,977
+[2026-01-27 00:20:49] [INFO] DDoS                 | 0.9995   | 0.9993  | 0.9994  |  155,191
+[2026-01-27 00:20:49] [INFO] DoS                  | 0.9998   | 0.9994  | 0.9996  |   39,314
+[2026-01-27 00:20:49] [INFO] Infilteration        | 0.4930   | 0.1303  | 0.2061  |   27,868
+[2026-01-27 00:20:49] [INFO] 
+[2026-01-27 00:20:49] [INFO] Aggregate Metrics:
+[2026-01-27 00:20:49] [INFO]   Accuracy:           0.9882 (98.82%)
+[2026-01-27 00:20:49] [INFO]   Macro Precision:    0.9134
+[2026-01-27 00:20:49] [INFO]   Macro Recall:       0.8532
+[2026-01-27 00:20:49] [INFO]   Macro F1-Score:     0.8657
+[2026-01-27 00:20:49] [INFO] 
+[2026-01-27 00:20:49] [INFO]   Weighted Precision: 0.9839
+[2026-01-27 00:20:49] [INFO]   Weighted Recall:    0.9882
+[2026-01-27 00:20:49] [INFO]   Weighted F1-Score:  0.9848
+[2026-01-27 00:20:49] [SUBSTEP] Calculating ROC curves and AUC scores...
+[2026-01-27 00:20:49] [INFO] 
+[2026-01-27 00:20:49] [INFO] Per-Class AUC Scores:
+[2026-01-27 00:20:50] [INFO]   Benign               AUC: 0.9885
+[2026-01-27 00:20:50] [INFO]   Botnet               AUC: 1.0000
+[2026-01-27 00:20:51] [INFO]   Brute Force          AUC: 1.0000
+[2026-01-27 00:20:51] [INFO]   DDoS                 AUC: 1.0000
+[2026-01-27 00:20:51] [INFO]   DoS                  AUC: 1.0000
+[2026-01-27 00:20:52] [INFO]   Infilteration        AUC: 0.9025
+[2026-01-27 00:20:52] [INFO] 
+[2026-01-27 00:20:52] [INFO]   Macro-Average AUC:   0.9818
+[2026-01-27 00:20:52] [INFO] 
+[2026-01-27 00:20:52] [SUCCESS] ================================================================================
+[2026-01-27 00:20:52] [SUCCESS] MULTICLASS EVALUATION SUMMARY
+[2026-01-27 00:20:52] [SUCCESS] ================================================================================
+[2026-01-27 00:20:52] [INFO] Accuracy:              0.9882 (98.82%)
+[2026-01-27 00:20:52] [INFO] Macro F1-Score:        0.8657
+[2026-01-27 00:20:52] [INFO] Weighted F1-Score:     0.9848
+[2026-01-27 00:20:52] [INFO] Macro AUC:             0.9818
+[2026-01-27 00:20:52] [INFO] Best Performing:       DoS (F1=0.9996)
+[2026-01-27 00:20:52] [INFO] Worst Performing:      Infilteration (F1=0.2061)
+[2026-01-27 00:20:52] [SUCCESS] ================================================================================
+[2026-01-27 00:20:52] [INFO] 
+[2026-01-27 00:20:52] [STEP] ================================================================================
+[2026-01-27 00:20:52] [STEP] BINARY EVALUATION (Benign vs Attack)
+[2026-01-27 00:20:52] [STEP] ================================================================================
+[2026-01-27 00:20:52] [INFO] Converted to binary classification:
+[2026-01-27 00:20:52] [INFO]   0 = Benign (Negative)
+[2026-01-27 00:20:52] [INFO]   1 = Attack (Positive)
+[2026-01-27 00:20:52] [INFO] 
+[2026-01-27 00:20:52] [INFO] Binary Confusion Matrix:
+[2026-01-27 00:20:52] [INFO]                  Predicted
+[2026-01-27 00:20:52] [INFO]                  Benign  | Attack
+[2026-01-27 00:20:52] [INFO]          --------|---------|--------
+[2026-01-27 00:20:52] [INFO]   Actual Benign | 2,121,792 |   3,816  (TN, FP)
+[2026-01-27 00:20:52] [INFO]          Attack |  24,538 | 245,719  (FN, TP)
+[2026-01-27 00:20:52] [INFO] 
+[2026-01-27 00:20:53] [INFO] Binary Classification Metrics:
+[2026-01-27 00:20:53] [INFO]   Accuracy:      0.9882 (98.82%)
+[2026-01-27 00:20:53] [INFO]   Precision:     0.9847 (PPV)
+[2026-01-27 00:20:53] [INFO]   Recall:        0.9092 (Sensitivity, TPR)
+[2026-01-27 00:20:53] [INFO]   F1-Score:      0.9455
+[2026-01-27 00:20:53] [INFO]   Specificity:   0.9982 (TNR)
+[2026-01-27 00:20:53] [INFO] 
+[2026-01-27 00:20:53] [INFO]   True Positives:  245,719
+[2026-01-27 00:20:53] [INFO]   True Negatives:  2,121,792
+[2026-01-27 00:20:53] [INFO]   False Positives: 3,816
+[2026-01-27 00:20:53] [INFO]   False Negatives: 24,538
+[2026-01-27 00:20:53] [INFO] 
+[2026-01-27 00:20:53] [INFO]   False Positive Rate: 0.0018 (0.18%)
+[2026-01-27 00:20:53] [INFO]   False Negative Rate: 0.0908 (9.08%)
+[2026-01-27 00:20:53] [SUBSTEP] Calculating binary ROC curve...
+[2026-01-27 00:20:53] [INFO] 
+[2026-01-27 00:20:53] [INFO]   Binary AUC: 0.9885
+[2026-01-27 00:20:53] [INFO]   Optimal threshold: 0.1010
+[2026-01-27 00:20:53] [INFO]     At this threshold: TPR=0.9333, FPR=0.0157
+[2026-01-27 00:20:53] [INFO] 
+[2026-01-27 00:20:53] [SUCCESS] ================================================================================
+[2026-01-27 00:20:53] [SUCCESS] BINARY EVALUATION SUMMARY
+[2026-01-27 00:20:53] [SUCCESS] ================================================================================
+[2026-01-27 00:20:53] [INFO] Accuracy:            0.9882
+[2026-01-27 00:20:53] [INFO] Precision:           0.9847
+[2026-01-27 00:20:53] [INFO] Recall (TPR):        0.9092
+[2026-01-27 00:20:53] [INFO] F1-Score:            0.9455
+[2026-01-27 00:20:53] [INFO] Specificity (TNR):   0.9982
+[2026-01-27 00:20:53] [INFO] AUC:                 0.9885
+[2026-01-27 00:20:53] [INFO] False Positive Rate: 0.0018
+[2026-01-27 00:20:53] [INFO] False Negative Rate: 0.0908
+[2026-01-27 00:20:53] [SUCCESS] ================================================================================
+[2026-01-27 00:20:53] [INFO] 
+[2026-01-27 00:20:53] [STEP] ================================================================================
+[2026-01-27 00:20:53] [STEP] ERROR ANALYSIS
+[2026-01-27 00:20:53] [STEP] ================================================================================
+[2026-01-27 00:20:53] [INFO] Total test samples: 2,395,865
+[2026-01-27 00:20:53] [INFO] Correctly classified: 2,367,490 (98.82%)
+[2026-01-27 00:20:53] [INFO] Misclassified: 28,375 (1.18%)
+[2026-01-27 00:20:53] [INFO] 
+[2026-01-27 00:20:53] [INFO] Top 10 Confusion Pairs:
+[2026-01-27 00:20:53] [INFO] Rank | True Class → Predicted Class         | Count    | % of Errors
+[2026-01-27 00:20:53] [INFO] --------------------------------------------------------------------------------
+[2026-01-27 00:20:53] [INFO]   1  | Infilteration → Benign                 |  24,238 |  85.42%
+[2026-01-27 00:20:53] [INFO]   2  | Benign → Infilteration                 |   3,733 |  13.16%
+[2026-01-27 00:20:53] [INFO]   3  | Botnet → Benign                        |     114 |   0.40%
+[2026-01-27 00:20:53] [INFO]   4  | DDoS → Benign                          |     103 |   0.36%
+[2026-01-27 00:20:53] [INFO]   5  | Benign → DDoS                          |      83 |   0.29%
+[2026-01-27 00:20:53] [INFO]   6  | Brute Force → Benign                   |      72 |   0.25%
+[2026-01-27 00:20:53] [INFO]   7  | DoS → Brute Force                      |      11 |   0.04%
+[2026-01-27 00:20:53] [INFO]   8  | DoS → Benign                           |      11 |   0.04%
+[2026-01-27 00:20:53] [INFO]   9  | Brute Force → DoS                      |       8 |   0.03%
+[2026-01-27 00:20:53] [INFO]  10  | Brute Force → DDoS                     |       2 |   0.01%
+[2026-01-27 00:20:53] [INFO] 
+[2026-01-27 00:20:53] [INFO] Critical Errors (False Negatives - Attacks missed):
+[2026-01-27 00:20:53] [INFO]   Total attacks classified as Benign: 24,538
+[2026-01-27 00:20:53] [INFO]     Botnet              :    114 missed
+[2026-01-27 00:20:53] [INFO]     Brute Force         :     72 missed
+[2026-01-27 00:20:53] [INFO]     DDoS                :    103 missed
+[2026-01-27 00:20:53] [INFO]     DoS                 :     11 missed
+[2026-01-27 00:20:53] [INFO]     Infilteration       : 24,238 missed
+[2026-01-27 00:20:53] [INFO] 
+[2026-01-27 00:20:53] [INFO] False Positives (Benign classified as Attack):
+[2026-01-27 00:20:53] [INFO]   Total benign classified as attack: 3,816
+[2026-01-27 00:20:53] [INFO]     Classified as DDoS                :     83
+[2026-01-27 00:20:53] [INFO]     Classified as Infilteration       :  3,733
+[2026-01-27 00:20:53] [INFO] 
+[2026-01-27 00:20:53] [SUCCESS] ================================================================================
+[2026-01-27 00:20:53] [SUCCESS] ERROR ANALYSIS SUMMARY
+[2026-01-27 00:20:53] [SUCCESS] ================================================================================
+[2026-01-27 00:20:53] [INFO] Total Errors:        28,375 (1.18%)
+[2026-01-27 00:20:53] [INFO] False Negatives:     24,538 (attacks missed)
+[2026-01-27 00:20:53] [INFO] False Positives:     3,816 (false alarms)
+[2026-01-27 00:20:53] [INFO] Most Confused Pair:  Infilteration → Benign (24,238 errors)
+[2026-01-27 00:20:53] [SUCCESS] ================================================================================
+[2026-01-27 00:20:53] [INFO] 
+[2026-01-27 00:20:53] [STEP] ================================================================================
+[2026-01-27 00:20:53] [STEP] GENERATING TESTING VISUALIZATIONS
+[2026-01-27 00:20:53] [STEP] ================================================================================
+[2026-01-27 00:20:53] [SUBSTEP] Creating confusion_matrix_multiclass.png...
+[2026-01-27 00:20:55] [SUCCESS] Saved: confusion_matrix_multiclass.png
+[2026-01-27 00:20:55] [SUBSTEP] Creating confusion_matrix_binary.png...
+[2026-01-27 00:20:55] [SUCCESS] Saved: confusion_matrix_binary.png
+[2026-01-27 00:20:55] [SUBSTEP] Creating per_class_metrics_bar.png...
+[2026-01-27 00:20:56] [SUCCESS] Saved: per_class_metrics_bar.png
+[2026-01-27 00:20:56] [SUBSTEP] Creating roc_curves_multiclass.png...
+[2026-01-27 00:20:57] [SUCCESS] Saved: roc_curves_multiclass.png
+[2026-01-27 00:20:57] [SUBSTEP] Creating roc_curve_binary.png...
+[2026-01-27 00:20:57] [SUCCESS] Saved: roc_curve_binary.png
+[2026-01-27 00:20:57] [SUBSTEP] Creating f1_comparison.png...
+[2026-01-27 00:20:58] [SUCCESS] Saved: f1_comparison.png
+[2026-01-27 00:20:58] [SUCCESS] All visualizations generated successfully!
+[2026-01-27 00:20:58] [INFO] 
+[2026-01-27 00:20:58] [STEP] Generating testing report...
+[2026-01-27 00:20:58] [SUCCESS] Testing report saved: /home/paudeladrin/Nids/reports/testing/testing_results.txt
+[2026-01-27 00:20:58] [INFO] 
+[2026-01-27 00:20:58] [SUCCESS] ================================================================================
+[2026-01-27 00:20:58] [SUCCESS] MODULE 5: MODEL TESTING COMPLETED SUCCESSFULLY
+[2026-01-27 00:20:58] [SUCCESS] ================================================================================
+[2026-01-27 00:20:58] [INFO] Total time: 20.5 seconds (0.3 minutes)
+[2026-01-27 00:20:58] [INFO] Macro F1-Score: 0.8657
+[2026-01-27 00:20:58] [INFO] Binary F1-Score: 0.9455
+[2026-01-27 00:20:58] [INFO] Reports saved to: /home/paudeladrin/Nids/reports/testing
+[2026-01-27 00:20:58] [INFO] 
+
+[2026-01-27 00:20:58] [SUCCESS] Requested modules completed!
+
+paudeladrin@instance-20260123-213323:~/Nids$ 
